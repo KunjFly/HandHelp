@@ -5,6 +5,7 @@
 		}
 	],
 	"settings": {
+		"python.formatting.provider": "none"
 	}
 	
 }
