@@ -57,12 +57,20 @@ def switch(choicesDict, checkVal, defaultVal=False): # Coz there is no [switch] 
 
 def getNowTS(): # Get now timestamp w/ milliseconds
     return time.time() * 1000
+
+
+def main_general_stuff(): # Test
+    types = {0:"DEBUG", 1:"INFO", 2:"WARN", 3:"ERROR"}
+    lvlName = switch(lvls, lvl, "INFO")
+    pass
+
 #endregion MainCode
 
 
 #region Startup
 if __name__=="__main__":
     print("Module executed as main")
+    main_general_stuff()
 else:
     print("Module [{0}] imported".format(__name__))
 #endregion Startup

@@ -1,5 +1,8 @@
 #region Imports
+from inspect import stack
 import re
+
+from lib_io import *
 #endregion Imports
 
 
@@ -9,7 +12,11 @@ import re
 ##############################
 
 def linesLstToChunksLst(linesLst):
-    # funcName = stack()[0][3]
+    funcName = stack()[0][3]
+
+    if not linesLst:
+        warnF("{}: linesLst is Empty!", funcName)
+        return
 
     chunksLst = []
     chunkText = ""
@@ -54,7 +61,7 @@ def parseChunk(chunk):
     # funcName = stack()[0][3]
 
     if not chunk:
-        return
+        return None
         
     parsedChunk = {
         "raw_text": chunk
@@ -82,8 +89,7 @@ def parseChunk(chunk):
         parsedChunk["question_number"] = result
     else:
         parsedChunk["raw_text_rest"] = chunk
-        # TODO: write parsed chunk
-        return
+        return parsedChunk
 
 
     # Get [who_asks]
@@ -103,8 +109,7 @@ def parseChunk(chunk):
         parsedChunk["who_asks"] = result
     else:
         parsedChunk["raw_text_rest"] = chunk
-        # TODO: write parsed chunk
-        return
+        return parsedChunk
 
 
     # Get [tags] (it can be empty)
@@ -150,8 +155,7 @@ def parseChunk(chunk):
         parsedChunk["who_answers"] = result
     else:
         parsedChunk["raw_text_rest"] = chunk
-        # TODO: write parsed chunk
-        return
+        return parsedChunk
 
     
     # Get [question]
@@ -174,14 +178,14 @@ def parseChunk(chunk):
         parsedChunk["question"] = result
     else:
         parsedChunk["raw_text_rest"] = chunk
-        # TODO: write parsed chunk
-        return
+        return parsedChunk
 
 
     # Get [answer_date]
 	# Get last line with date
     regExpStr = r"^(.*?)(<\/h2>)" # Captured 2 groups
-    result = re.findall(regExpStr, chunk, flags=re.IGNORECASE or re.DOTALL) # If error then use "|"
+    # result = re.findall(regExpStr, chunk, flags=re.IGNORECASE or re.DOTALL) # If error then use "|"
+    result = re.findall(regExpStr, chunk, flags=re.IGNORECASE | re.DOTALL)
     if result and len(result) > 0 and len(result[0][0]) > 0:
         fullResult = "".join(result[0])
         # Get date
@@ -193,15 +197,13 @@ def parseChunk(chunk):
             parsedChunk["answer_date"] = result
 
 			# Remove part [answer_date] from chunk
-            chunk = chunk.replace(fullResult, "")
+            chunk = chunk.replace(result, "")
         else:
             parsedChunk["raw_text_rest"] = chunk
-            # TODO: write parsed chunk
-            return
+            return parsedChunk
     else:
         parsedChunk["raw_text_rest"] = chunk
-        # TODO: write parsed chunk
-        return
+        return parsedChunk
     
 
     # Get [previous_questions]
@@ -212,25 +214,29 @@ def parseChunk(chunk):
 	# Replace <br> on \r\n
 	# https://stackoverflow.com/questions/5959415/jquery-javascript-regex-replace-br-with-n
     regExpStr = r"<br\s*[\/]?>"
-    result = re.sub(regExpStr, "\r\n", result)
+    result = re.sub(regExpStr, "\r\n", chunk)
 
     # Remove all HTML tags
     regExpStr = r"<[^>]*>?"
     result = re.sub(regExpStr, "", result)
 
     result = result.strip()
-    parsedChunk.answer = result
+    parsedChunk["answer"] = result
 
-    parsedChunk["raw_text_rest"] = ""
-    
-    # TODO: write parsed chunk
-    # writeChunk(params);
+    parsedChunk["raw_text_rest"] = None
+    return parsedChunk
+
+
+def main_chunks_processing(): # Test
+    pass
+
 #endregion MainCode
 
 
 #region Startup
 if __name__=="__main__":
     print("Module executed as main")
+    main_chunks_processing()
 else:
     print("Module [{0}] imported".format(__name__))
 #endregion Startup

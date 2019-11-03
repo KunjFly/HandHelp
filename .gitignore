@@ -105,3 +105,4 @@ venv.bak/
 
 # Other stuff
 files/
+/log.txt

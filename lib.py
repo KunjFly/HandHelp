@@ -12,7 +12,7 @@ from lib_chunks_processing import *
 
 
 #region MainCode
-def main(): # Test
+def main_lib(): # Test
 
     # global config
     # config = getConfigValues()
@@ -54,7 +54,7 @@ def main(): # Test
     # resultStr = "".join(result[0])
 
     line = "<br>25.06.2017</font></h2>"
-    line = "<br>OLOLO</h2>"
+    line = "<br>TEST PETROVICH</h2>"
     regExpStr = r"((3[01]|[12][0-9]|0?[1-9])\.(1[012]|0?[1-9])\.((?:19|20)\d{2}))"
     result = re.search(regExpStr, line)
     if result:
@@ -66,7 +66,7 @@ def main(): # Test
 #region Startup
 if __name__=="__main__":
     print("Module executed as main")
-    main()
+    main_lib()
 else:
     print("Module [{0}] imported".format(__name__))
 #endregion Startup
