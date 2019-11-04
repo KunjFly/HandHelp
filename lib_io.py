@@ -4,7 +4,7 @@ from os import path, listdir
 import os
 import json
 from datetime import datetime
-from send2trash import send2trash   # !!!!! pip install Send2Trash
+from send2trash import send2trash # Dependencies: pip install Send2Trash
 import shutil
 
 from lib_consts import *
@@ -201,12 +201,12 @@ def readFileAsStr(fileName):
         return ""
 
 
-def readFileAsLinesLst(fileName, encoding="utf-8"):
+def readFileAsLinesLst(fileName, encoding="utf-8", errors="replace"):
     funcName = stack()[0][3]
 
     fileToBeRead = getPathToInputFile(fileName, INPUT_FOLDER_LST)
     try:
-        with open(fileToBeRead, "r", encoding=encoding) as file:
+        with open(fileToBeRead, "r", encoding=encoding, errors=errors) as file:
             return file.readlines()
     except Exception as ex:
         errF("{}: Exception: [{}].", funcName, ex)

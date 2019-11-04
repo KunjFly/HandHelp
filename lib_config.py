@@ -1,9 +1,8 @@
 #region Imports
 from inspect import stack
 from os import path
-from yaml import safe_load          # !!!!! pip install pyyaml
+from yaml import safe_load # Dependencies: pip install pyyaml
 
-from lib_consts import *
 from lib_io import *
 #endregion Imports
 
@@ -19,7 +18,7 @@ def loadConfig(fileName="config.yml"):
         filePath = path.join(ROOT_PATH, fileName)
         return safe_load( open(filePath) )
     except Exception as ex:
-        errF("Error in function [{}]. Exception: [{}].", funcName, ex)
+        errF("{}: Exception: [{}].", funcName, ex)
 
 
 def getConfigValues(config=None):
@@ -28,7 +27,7 @@ def getConfigValues(config=None):
     if not config :
         config = loadConfig()
         if not config :
-            warnF("Warning in function [{}]: Config is Empty", funcName)
+            warnF("{}: Config is Empty", funcName)
             return None
 
     # global DB_URL

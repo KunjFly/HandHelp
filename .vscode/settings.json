@@ -3,5 +3,6 @@
 		"editor.insertSpaces": true,
 		"editor.tabSize": 4,
 		"formatting.provider": "none"
-	}
+	},
+	"python.pythonPath": "C:\\Users\\Andrew\\AppData\\Local\\Programs\\Python\\Python37\\python.exe"
 }
