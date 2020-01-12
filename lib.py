@@ -5,40 +5,18 @@ from lib_config import *
 from lib_io import *
 from lib_chunks_processing import *
 from lib_db import *
+
+import log
 #endregion Imports
-
-
-#region Functions
-#endregion Functions
-
 
 #region MainCode
 def main_lib(): # Test
+    """"""
+    if not logger:
+        return
 
     # global config
     # config = getConfigValues()
-
-    # dic = {
-    #         "a"     : 1
-    #         ,"b"    : 2
-    # }
-    # arr = [1, 2, 3, 9]
-    # msg = "{} {} {} {}"
-
-    # print( switch(dic, "c", "Hey") )
-    # print( switch(arr, "c") )
-    
-    # print( len(arr) )
-    # print( arr[1:] )
-
-    # strF(msg, 4, 2, 0, 0)
-    # strF(msg, 4, 2, 0)
-
-    # log("Hello", "Log!")
-    # warn("Hello", "Warn!", "321")
-    # err("Hello", "ErR!", "oR")
-
-    # deleteContentOfFolder(OUTPUT_FOLDER_LST)
 
 
     # regExpStr = r"(?:<b>Спрашивает[ ]{0,})(?:.*?)(?:<\/b>)" # Non Captured 3 groups
@@ -84,16 +62,16 @@ def main_lib(): # Test
 		,"raw_text_rest": None
     }
     result = insert(query, params)
-    print(result)
-    pass
-
+    logger.info(result)
 #endregion MainCode
 
 
 #region Startup
+logger = log.init()
 if __name__=="__main__":
-    print("Module executed as main")
-    main_lib()
+    if logger:
+        logger.info(f"This module is executing")
+        main_lib()
 else:
-    print("Module [{0}] imported".format(__name__))
+    logger.info(f"This module is imported")
 #endregion Startup

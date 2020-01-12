@@ -1,0 +1,47 @@
+version: 1
+disable_existing_loggers: False
+
+formatters:
+    root_formatter:
+        # format: "%(asctime)s.%(msecs)03d - %(levelname)s - %(name)s - %(module)s - %(funcName)s - %(lineno)d -  %(message)s"
+        format: "%(asctime)-17s.%(msecs)03d | %(levelname)-8s | T: %(thread)-8d | %(module)-20s => %(funcName)-20s | L: %(lineno)-4d: %(message)s"
+        datefmt: "%y.%m.%d %H:%M:%S"
+    # named_formatter:
+        # format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+
+handlers:
+    console_handler:
+        class: logging.StreamHandler
+        level: DEBUG
+        formatter: root_formatter
+        stream: ext://sys.stdout
+        
+    file_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: DEBUG
+        formatter: root_formatter
+        filename: all_info.log
+        maxBytes: 134217728         # 128MB
+        backupCount: 20
+        encoding: utf8
+        
+    errors_file_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: ERROR
+        formatter: root_formatter
+        filename: only_errors.log
+        maxBytes: 134217728         # 128MB
+        backupCount: 20
+        encoding: utf8
+
+
+# loggers:  # Any special separated loggers if it's in need
+    # errors_to_file:
+        # level: ERROR
+        # handlers: [errors_file_handler]
+        # propagate: no
+
+root:
+    level: DEBUG # General level of logging. Default value if level not set: WARNING 
+    handlers: [console_handler, file_handler, errors_file_handler]

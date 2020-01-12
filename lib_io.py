@@ -9,100 +9,16 @@ import shutil
 
 from lib_consts import *
 from lib_general_stuff import *
+import log
 #endregion Imports
 
 
-#region MainCode
-
-##############################
-#	Logging
-##############################
-
-def logMessage(msg, fileName="log", lvl=1, toFile=True, toConsole=True):
-    # Prepare message
-    msg = str(msg)
-
-    now = datetime.now()
-    nowFormatted = "{}-{}-{} {}:{}:{}:{}"
-    nowFormatted = nowFormatted.format(now.year, now.month, now.day, now.hour, now.minute, now.second, now.microsecond)
-
-    lvls = {0:"DEBUG", 1:"INFO", 2:"WARN", 3:"ERROR"}
-    lvlName = switch(lvls, lvl, "INFO")
-
-    msg = f"[{nowFormatted}]\t[{lvlName}]\t{msg}\r"
-
-    if toFile:
-        writeToFile(msg, fileName=fileName)
-
-    if toConsole:
-        print(msg)
-
-
-def log(*msgs):
-    funcName = stack()[0][3]
-
-    try:
-        msg = " ".join(msgs)
-        logMessage(msg)
-    except Exception as ex:
-        printF("Error in function [{}]. Exception: [{}].", funcName, ex)
-
-
-def warn(*msgs):
-    funcName = stack()[0][3]
-
-    try:
-        msg = " ".join(msgs)
-        logMessage(msg, lvl=2)
-    except Exception as ex:
-        printF("Error in function [{}]. Exception: [{}].", funcName, ex)
-
-
-def err(*msgs):
-    funcName = stack()[0][3]
-    
-    try:
-        msg = " ".join(msgs)
-        logMessage(msg, lvl=3)
-    except Exception as ex:
-        printF("Error in function [{}]. Exception: [{}].", funcName, ex)
-
-
-def logF(*args):
-    funcName = stack()[0][3]
-    
-    try: 
-        log( strF(*args) )
-    except Exception as ex:
-        printF("Error in function [{}]. Exception: [{}].", funcName, ex)
-
-
-def warnF(*args):
-    funcName = stack()[0][3]
-    
-    try:
-        warn( strF(*args) )
-    except Exception as ex:
-        printF("Error in function [{}]. Exception: [{}].", funcName, ex)
-
-
-def errF(*args):
-    funcName = stack()[0][3]
-    
-    try:
-        msg = strF(*args)
-        err(msg)
-    except Exception as ex:
-        printF("Error in function [{}]. Exception: [{}].", funcName, ex)
-
-
+#region Functions
 ##############################
 #	I/O
 ##############################
-
 def writeToFile(obj, fileName=None, filePath=[], mode=None, encoding="utf-8", isAddTS=False):
-    funcName = stack()[0][3]
-
+    """"""
     if mode is None:
         mode="a"
 
@@ -118,34 +34,30 @@ def writeToFile(obj, fileName=None, filePath=[], mode=None, encoding="utf-8", is
 
         return True, fileToBeWrite
     except Exception as ex:
-        printF("Error in function [{}]. Exception: [{}]", funcName, ex)
+        logging.error("Exception occurred!", exc_info=True)
         return False, fileToBeWrite
 
 
-def writeObjsToFilesWitsTSname(objsLst: list, filePath=[], encoding="utf-8"):
-    funcName = stack()[0][3]
-
+def writeObjsToFilesWithTSname(objsLst: list, filePath=[], encoding="utf-8"):
+    """"""
     for obj in objsLst:
         isSuccess, writedFile = writeToFile(obj, filePath=filePath, isAddTS=True, encoding=encoding)
         if isSuccess:
-            logF("{}: File[{}]", funcName, writedFile)
-        else:
-            warnF("{}: File[{}]", funcName, writedFile)
+            logger.info(f"File[{writedFile}]")
 
 
 def writeObjsToFiles(objsLst: list):
-    funcName = stack()[0][3]
-    
+    """"""
     for obj in objsLst:
 
         objType = type(obj)
         if objType is not dict:
-            warnF("{}: obj has type{}, but it must be dict!", funcName, obj, objType)
+            logger.warn(f"Obj has type [{objType}], but it must be dict!")
             continue
         
         # fields = ("content", "name", "path", "mode" "encoding", "timestamp")
         # if not all( k in obj for k in fields ):
-        #     warnF("{}: obj have incorrect strcucture.", funcName)
+        #     logger.warn("Obj have incorrect strcucture.")
         #     continue
         
         fileContent = obj["content"] if "content" in obj else None
@@ -157,12 +69,11 @@ def writeObjsToFiles(objsLst: list):
         
         isSuccess, writedFile = writeToFile(fileContent, fileName, filePath, fileMode, fileEncoding, fileTimestamp)
         if isSuccess:
-            logF("{}: File[{}]", funcName, writedFile)
-        else:
-            warnF("{}: File[{}]", funcName, writedFile)
+            logger.info(f"File[{writedFile}]")
 
 
 def getPathToInputFile(fileName, filePath=[]):
+    """"""
     if len(filePath) == 0:
         return path.join(ROOT_PATH, fileName)
 
@@ -171,15 +82,15 @@ def getPathToInputFile(fileName, filePath=[]):
 
 
 def getPathToOutputFile(fileName=None, filePath=[], isAddTS=None, ext="txt"):
-
+    """"""
+    nowTS       = getNowTS()
     if fileName:
         if isAddTS:
-            fileName = strF("{}_{}.{}", fileName, getNowTS(), ext)
+            fileName    = f"{fileName}_{nowTS}.{ext}"
         else:
-            fileName = strF("{}.{}", fileName, ext)
-        
+            fileName    = f"{fileName}.{ext}"
     else:
-        fileName = strF("{}.{}", getNowTS(), ext)
+        fileName    = f"{nowTS}.{ext}"
 
     if filePath is None or len(filePath) == 0:
         return path.join(ROOT_PATH, fileName)
@@ -190,41 +101,38 @@ def getPathToOutputFile(fileName=None, filePath=[], isAddTS=None, ext="txt"):
 
 
 def readFileAsStr(fileName):
-    funcName = stack()[0][3]
-
+    """"""
     fileToBeRead = getPathToInputFile(fileName, INPUT_FOLDER_LST)
     try:
         with open(fileToBeRead, "r") as file:
             return file.read()
     except Exception as ex:
-        errF("{}: Exception: [{}].", funcName, ex)
+        logging.error("Exception occurred!", exc_info=True)
         return ""
 
 
 def readFileAsLinesLst(fileName, encoding="utf-8", errors="replace"):
-    funcName = stack()[0][3]
-
+    """"""
     fileToBeRead = getPathToInputFile(fileName, INPUT_FOLDER_LST)
     try:
         with open(fileToBeRead, "r", encoding=encoding, errors=errors) as file:
             return file.readlines()
     except Exception as ex:
-        errF("{}: Exception: [{}].", funcName, ex)
+        logging.error("Exception occurred!", exc_info=True)
         return None
 
 
 def deleteContentOfFolder(folderPath, isDeleteDirs=False, isSendToTrash=True):
-    funcName = stack()[0][3]
-
+    """"""
     typeOfFolderPath = type(folderPath)
     if typeOfFolderPath is list:
         folderPath = path.join(*folderPath)
     elif typeOfFolderPath is not str:
-        warnF("{}: folderPath[{}] incorrect!", funcName, folderPath)
+        logger.warn(f"FolderPath[{folderPath}] is incorrect!")
         return
 
     if not path.isdir(folderPath):
-        warnF("{}: Dir[{}] not exists! Nothing to remove", funcName, folderPath)
+        logger.warn(f"Dir[{folderPath}] not exists! Nothing to remove")
         return
 
     for fileName in listdir(folderPath):
@@ -234,28 +142,31 @@ def deleteContentOfFolder(folderPath, isDeleteDirs=False, isSendToTrash=True):
 
                 if isSendToTrash:
                     send2trash(filePath)
-                    logF("Success move to trash file [{}]", filePath)
+                    logger.info(f"Success move to trash file [{filePath}]")
                 else:
                     os.unlink(filePath)
-                    logF("Success delete file [{}]", filePath)
+                    logger.info(f"Success delete file [{filePath}]")
                 
             elif isDeleteDirs and os.path.isdir(filePath):
 
                 if isSendToTrash:
                     send2trash(filePath)
-                    logF("Success move to trash dir [{}]", filePath)
+                    logger.info(f"Success move to trash dir [{filePath}]")
                 else:
                     shutil.rmtree(filePath)
-                    logF("Success delete dir [{}]", filePath)
+                    logger.info(f"Success delete dir [{filePath}]")
 
         except Exception as ex:
-            errF("{}. Exception: [{}].", funcName, ex)
+            logging.error("Exception occurred!", exc_info=True)
+#endregion Functions
 
 
+#region MainCode
 def main_io(): # Test
+    """"""
     # obj = None
     # if obj:
-    #     printF(obj)
+    #     logger.info(obj)
     # pass
     
     # obj = {
@@ -265,19 +176,16 @@ def main_io(): # Test
     # }
     # fields = ("name", "path", "encoding")
     # if all( k in obj for k in fields ):
-    #     print("eee, boy")
-
-    
-
-    pass
-
+    #     logger.info("eee, boy")
 #endregion MainCode
 
 
 #region Startup
+logger = log.init()
 if __name__=="__main__":
-    print("Module executed as main")
-    main_io()
+    if logger:
+        logger.info(f"This module is executing")
+        main_io()
 else:
-    print("Module [{0}] imported".format(__name__))
+    logger.info(f"This module is imported")
 #endregion Startup

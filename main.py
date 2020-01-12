@@ -3,14 +3,14 @@ from inspect import stack
 
 import lib
 from lib_io import *
+import log
 # endregion Imports
 
 
 # region MainCode
 def main():
-    funcName = stack()[0][3]
-
-    lib.log("[Start script]")
+    """"""
+    logger.info("[Start script]")
 
     lib.deleteContentOfFolder(lib.OUTPUT_FOLDER_LST)
 
@@ -27,12 +27,15 @@ def main():
     # linesLst = lib.readFileAsLinesLst(fileName, encoding="latin-1")
     linesLst = lib.readFileAsLinesLst(fileName, encoding="Windows-1251")
 
+    
     # Get chunks
     chunksLst = lib.linesLstToChunksLst(linesLst)
     if not chunksLst:
-        warnF("{}: chunksLst is Empty!", funcName)
+        logger.warn("chunksLst is empty!")
         return
-    logF("{}: file {} loaded.", funcName, fileName)
+    
+    logger.info(f"File {fileName} is loaded.")
+    
 
     # Parse chunks
     parsedChunksLst = []
@@ -43,7 +46,7 @@ def main():
     
 
     # Write chunks to files
-    # lib.writeObjsToFilesWitsTSname(chunksLst, filePath=lib.OUTPUT_FOLDER_LST)
+    # lib.writeObjsToFilesWithTSname(chunksLst, filePath=lib.OUTPUT_FOLDER_LST)
 
 
     # Write chunks to files (splited on successed and failed)
@@ -99,17 +102,19 @@ def main():
     for parsedChunk in parsedChunksLst:
         result = lib.insert(query, parsedChunk)
         if result:
-            logF(f"Inserted row {result}")
+            logger.info(f"Inserted row {result}")
 
 
-    lib.log("[End script]")
+    logger.info("[End script]")
 # endregion MainCode
 
 
-# region Startup
-if __name__ == "__main__":
-    print("Module executed as main")
-    main()
+#region Startup
+logger = log.init()
+if __name__=="__main__":
+    if logger:
+        logger.info(f"This module is executing")
+        main()
 else:
-    print("Module [{0}] imported".format(__name__))
-# endregion Startup
+    logger.info(f"This module is imported")
+#endregion Startup

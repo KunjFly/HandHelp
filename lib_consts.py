@@ -1,5 +1,6 @@
 #region Imports
 from pathlib import Path
+import log
 #endregion Imports
 
 
@@ -9,15 +10,16 @@ INPUT_FOLDER_LST = [ROOT_PATH, "files", "input"]
 OUTPUT_FOLDER_LST = [ROOT_PATH, "files", "output"]
 
 def main_consts(): # Test
-    pass
-
+    """"""
 #endregion MainCode
 
 
 #region Startup
+logger = log.init()
 if __name__=="__main__":
-    print("Module executed as main")
-    main_consts()
+    if logger:
+        logger.info(f"This module is executing")
+        main_consts()
 else:
-    print("Module [{0}] imported".format(__name__))
+    logger.info(f"This module is imported")
 #endregion Startup

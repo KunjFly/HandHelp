@@ -3,19 +3,18 @@ from inspect import stack
 import re
 
 from lib_io import *
+import log
 #endregion Imports
 
 
-#region MainCode
+#region Functions
 ##############################
 #	Text to Chunks processing
 ##############################
-
 def linesLstToChunksLst(linesLst):
-    funcName = stack()[0][3]
-
+    """"""
     if not linesLst:
-        warnF("{}: linesLst is Empty!", funcName)
+        logger.warn("Input parameter [linesLst] is empty!")
         return
 
     chunksLst = []
@@ -56,10 +55,8 @@ def linesLstToChunksLst(linesLst):
 ##############################
 #	Processing of chunks
 ##############################
-
 def parseChunk(chunk):
-    # funcName = stack()[0][3]
-
+    """"""
     if not chunk:
         return None
         
@@ -225,18 +222,21 @@ def parseChunk(chunk):
 
     parsedChunk["raw_text_rest"] = None
     return parsedChunk
+#endregion Functions
 
 
+#region MainCode
 def main_chunks_processing(): # Test
-    pass
-
+    """"""
 #endregion MainCode
 
 
 #region Startup
+logger = log.init()
 if __name__=="__main__":
-    print("Module executed as main")
-    main_chunks_processing()
+    if logger:
+        logger.info(f"This module is executing")
+        main_chunks_processing()
 else:
-    print("Module [{0}] imported".format(__name__))
+    logger.info(f"This module is imported")
 #endregion Startup

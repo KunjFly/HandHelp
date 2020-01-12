@@ -4,30 +4,26 @@ from os import path
 from yaml import safe_load # Dependencies: pip install pyyaml
 
 from lib_io import *
+import log
 #endregion Imports
 
 
-#region MainCode
-##############################
-#	Config
-##############################
-
+#region Functions
 def loadConfig(fileName="config.yml"):
-    funcName = stack()[0][3]
+    """"""
     try:
         filePath = path.join(ROOT_PATH, fileName)
         return safe_load( open(filePath) )
     except Exception as ex:
-        errF("{}: Exception: [{}].", funcName, ex)
+        logging.error("Exception occurred!", exc_info=True)
 
 
 def getConfigValues(config=None):
-    funcName = stack()[0][3]
-
+    """"""
     if not config :
         config = loadConfig()
         if not config :
-            warnF("{}: Config is Empty", funcName)
+            logger.warn("Input parameter [config] is empty!")
             return None
 
     # global DB_URL
@@ -40,12 +36,14 @@ def getConfigValues(config=None):
     # FILE_TO_BE_PROCESSED
 
     return config
-#endregion MainCode
+#endregion Functions
 
 
 #region Startup
+logger = log.init()
 if __name__=="__main__":
-    print("Module executed as main")
+    if logger:
+        logger.info(f"This module is executing")
 else:
-    print("Module [{0}] imported".format(__name__))
+    logger.info(f"This module is imported")
 #endregion Startup

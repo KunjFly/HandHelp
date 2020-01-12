@@ -6,12 +6,13 @@ from contextlib import closing
 
 import lib_config
 from lib_io import *
+import log
 #endregion Imports
 
 
 #region Functions
-
 def _getConnStr() -> str:
+    """"""
     config = lib_config.getConfigValues()
     connStr = "host='{}' dbname='{}' user='{}' password='{}'".format(
         config["host"]
@@ -23,10 +24,10 @@ def _getConnStr() -> str:
 
 
 def select(query: str, params: list = []) -> dict:
-    funcName = stack()[0][3]
-
+    """"""
     if query.lower().find("select") == -1:
-        errF("{}: query is not select.", funcName)
+        # TODO: Add RegExpr to check if it's real SELECT statement
+        logger.error(f"{query}: it's not [SELECT]!")
         return None
 
     connStr = _getConnStr()
@@ -38,18 +39,18 @@ def select(query: str, params: list = []) -> dict:
                     records = cursor.fetchall()
                     return records
                 else:
-                    warnF("{}: no data was selected", funcName)
+                    logger.warn(f"Select return 0 rows, query=[{query}], params=[{params}]")
                     return None
             except Exception as ex:
-                errF("{}: Exception: [{}].", funcName, ex)
+                logging.error("Exception occurred!", exc_info=True)
                 return None
 
 
 def insert(query: str, params: list = []) -> int:
-    funcName = stack()[0][3]
-
+    """"""
     if query.lower().find("insert") == -1:
-        errF("{}: query is not insert.", funcName)
+        # TODO: Add RegExpr to check if it's real INSERT statement
+        logger.error(f"{query}: it's not [INSERT]!")
         return None
 
     connStr = _getConnStr()
@@ -64,14 +65,12 @@ def insert(query: str, params: list = []) -> int:
                 else:
                     return None
             except Exception as ex:
-                errF("{}: Exception: [{}].", funcName, ex)
+                logging.error("Exception occurred!", exc_info=True)
                 return None
-    pass
 
 
 def truncateTable(tableName):
-    funcName = stack()[0][3]
-
+    """"""
     query = f"TRUNCATE table {tableName}"
     connStr = _getConnStr()
     with closing( psycopg2.connect(connStr) ) as conn:
@@ -81,13 +80,12 @@ def truncateTable(tableName):
                 cursor.execute(query)
                 return 1
             except Exception as ex:
-                errF("{}: Exception: [{}].", funcName, ex)
+                logging.error("Exception occurred!", exc_info=True)
                 return None
 
 
 def alterSeq(seqName: str, count: int):
-    funcName = stack()[0][3]
-    
+    """"""
     query = f"ALTER SEQUENCE {seqName} RESTART WITH {count}"
     connStr = _getConnStr()
     with closing( psycopg2.connect(connStr) ) as conn:
@@ -97,22 +95,22 @@ def alterSeq(seqName: str, count: int):
                 cursor.execute(query)
                 return 1
             except Exception as ex:
-                errF("{}: Exception: [{}].", funcName, ex)
+                logging.error("Exception occurred!", exc_info=True)
                 return None
 
+
 # def update(query: str, params: list = []):
-#     pass
+#     """"""
 
 
 # def delete(query: str, params: list = []):
-#     pass
-
+#     """"""
 #endregion Functions
 
 
 #region MainCode
 def main_db(): # Test
-
+    """"""
     # trunc
     truncateTable("users")
     truncateTable("users2")
@@ -148,16 +146,15 @@ def main_db(): # Test
     # Insert (incorrect)
     query = "INSERT INTO users2 (name, age) VALUES (%(Name)s, %(Age)s);"
     result = select(query, params)
-
-    pass
-
 #endregion MainCode
 
 
 #region Startup
+logger = log.init()
 if __name__=="__main__":
-    print("Module executed as main")
-    main_db()
+    if logger:
+        logger.info(f"This module is executing")
+        main_db()
 else:
-    print("Module [{0}] imported".format(__name__))
+    logger.info(f"This module is imported")
 #endregion Startup
