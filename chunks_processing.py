@@ -2,8 +2,8 @@
 from inspect import stack
 import re
 
-from lib_io import *
 import log
+import io_extra
 #endregion Imports
 
 
@@ -14,7 +14,7 @@ import log
 def linesLstToChunksLst(linesLst):
     """"""
     if not linesLst:
-        logger.warn("Input parameter [linesLst] is empty!")
+        logger.warning("Input parameter [linesLst] is empty!")
         return
 
     chunksLst = []

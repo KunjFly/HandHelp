@@ -61,10 +61,10 @@ def _setup( default_path='logging.yml',
                 config = yaml.safe_load(f.read())
             logging.config.dictConfig(config)
         except Exception as ex:
-            logging.error("Exception occurred!", exc_info=True)
+            logger.error("Exception occurred!", exc_info=True)
             return None
     else:
-        logging.basicConfig(level=default_level)
+        logger.basicConfig(level=default_level)
     return True
 
 
@@ -79,7 +79,7 @@ def _get(name = None):
         # logger = logging.getLogger()
         # return StyleAdapter(logger)
     except Exception as ex:
-        logging.error("Exception occurred!", exc_info=True)
+        logger.error("Exception occurred!", exc_info=True)
         return None
 
 

@@ -7,9 +7,10 @@ from datetime import datetime
 from send2trash import send2trash # Dependencies: pip install Send2Trash
 import shutil
 
-from lib_consts import *
-from lib_general_stuff import *
+# from consts import *
 import log
+import consts
+import general_stuff
 #endregion Imports
 
 
@@ -34,7 +35,7 @@ def writeToFile(obj, fileName=None, filePath=[], mode=None, encoding="utf-8", is
 
         return True, fileToBeWrite
     except Exception as ex:
-        logging.error("Exception occurred!", exc_info=True)
+        logger.error("Exception occurred!", exc_info=True)
         return False, fileToBeWrite
 
 
@@ -52,12 +53,12 @@ def writeObjsToFiles(objsLst: list):
 
         objType = type(obj)
         if objType is not dict:
-            logger.warn(f"Obj has type [{objType}], but it must be dict!")
+            logger.warning(f"Obj has type [{objType}], but it must be dict!")
             continue
         
         # fields = ("content", "name", "path", "mode" "encoding", "timestamp")
         # if not all( k in obj for k in fields ):
-        #     logger.warn("Obj have incorrect strcucture.")
+        #     logger.warning("Obj have incorrect strcucture.")
         #     continue
         
         fileContent = obj["content"] if "content" in obj else None
@@ -75,7 +76,7 @@ def writeObjsToFiles(objsLst: list):
 def getPathToInputFile(fileName, filePath=[]):
     """"""
     if len(filePath) == 0:
-        return path.join(ROOT_PATH, fileName)
+        return path.join(consts.ROOT_PATH, fileName)
 
     filePath.append(fileName)
     return path.join(*filePath)
@@ -83,7 +84,7 @@ def getPathToInputFile(fileName, filePath=[]):
 
 def getPathToOutputFile(fileName=None, filePath=[], isAddTS=None, ext="txt"):
     """"""
-    nowTS       = getNowTS()
+    nowTS       = general_stuff.getNowTS()
     if fileName:
         if isAddTS:
             fileName    = f"{fileName}_{nowTS}.{ext}"
@@ -93,7 +94,7 @@ def getPathToOutputFile(fileName=None, filePath=[], isAddTS=None, ext="txt"):
         fileName    = f"{nowTS}.{ext}"
 
     if filePath is None or len(filePath) == 0:
-        return path.join(ROOT_PATH, fileName)
+        return path.join(consts.ROOT_PATH, fileName)
     
     outPath = filePath.copy() # To prevent changes to the original list
     outPath.append(fileName)
@@ -102,23 +103,23 @@ def getPathToOutputFile(fileName=None, filePath=[], isAddTS=None, ext="txt"):
 
 def readFileAsStr(fileName):
     """"""
-    fileToBeRead = getPathToInputFile(fileName, INPUT_FOLDER_LST)
+    fileToBeRead = getPathToInputFile(fileName, consts.INPUT_FOLDER_LST)
     try:
         with open(fileToBeRead, "r") as file:
             return file.read()
     except Exception as ex:
-        logging.error("Exception occurred!", exc_info=True)
+        logger.error("Exception occurred!", exc_info=True)
         return ""
 
 
 def readFileAsLinesLst(fileName, encoding="utf-8", errors="replace"):
     """"""
-    fileToBeRead = getPathToInputFile(fileName, INPUT_FOLDER_LST)
+    fileToBeRead = getPathToInputFile(fileName, consts.INPUT_FOLDER_LST)
     try:
         with open(fileToBeRead, "r", encoding=encoding, errors=errors) as file:
             return file.readlines()
     except Exception as ex:
-        logging.error("Exception occurred!", exc_info=True)
+        logger.error("Exception occurred!", exc_info=True)
         return None
 
 
@@ -128,11 +129,11 @@ def deleteContentOfFolder(folderPath, isDeleteDirs=False, isSendToTrash=True):
     if typeOfFolderPath is list:
         folderPath = path.join(*folderPath)
     elif typeOfFolderPath is not str:
-        logger.warn(f"FolderPath[{folderPath}] is incorrect!")
+        logger.warning(f"FolderPath[{folderPath}] is incorrect!")
         return
 
     if not path.isdir(folderPath):
-        logger.warn(f"Dir[{folderPath}] not exists! Nothing to remove")
+        logger.warning(f"Dir[{folderPath}] not exists! Nothing to remove")
         return
 
     for fileName in listdir(folderPath):
@@ -157,7 +158,7 @@ def deleteContentOfFolder(folderPath, isDeleteDirs=False, isSendToTrash=True):
                     logger.info(f"Success delete dir [{filePath}]")
 
         except Exception as ex:
-            logging.error("Exception occurred!", exc_info=True)
+            logger.error("Exception occurred!", exc_info=True)
 #endregion Functions
 
 

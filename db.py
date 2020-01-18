@@ -4,16 +4,16 @@ from psycopg2.extras import DictCursor
 from inspect import stack
 from contextlib import closing
 
-import lib_config
-from lib_io import *
 import log
+import config
+import io_extra
 #endregion Imports
 
 
 #region Functions
 def _getConnStr() -> str:
     """"""
-    config = lib_config.getConfigValues()
+    config = config.getConfigValues()
     connStr = "host='{}' dbname='{}' user='{}' password='{}'".format(
         config["host"]
         ,config["dbname"]
@@ -31,19 +31,19 @@ def select(query: str, params: list = []) -> dict:
         return None
 
     connStr = _getConnStr()
-    with closing( psycopg2.connect(connStr) ) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            try:
-                cursor.execute(query, params)
-                if cursor.rowcount:
-                    records = cursor.fetchall()
-                    return records
-                else:
-                    logger.warn(f"Select return 0 rows, query=[{query}], params=[{params}]")
-                    return None
-            except Exception as ex:
-                logging.error("Exception occurred!", exc_info=True)
-                return None
+    try:
+        with closing( psycopg2.connect(connStr) ) as conn:
+            with conn.cursor(cursor_factory=DictCursor) as cursor:
+                    cursor.execute(query, params)
+                    if cursor.rowcount:
+                        records = cursor.fetchall()
+                        return records
+                    else:
+                        logger.warning(f"Select return 0 rows, query=[{query}], params=[{params}]")
+                        return None
+    except Exception as ex:
+        logger.error("Exception occurred!", exc_info=True)
+        return None
 
 
 def insert(query: str, params: list = []) -> int:
@@ -54,49 +54,49 @@ def insert(query: str, params: list = []) -> int:
         return None
 
     connStr = _getConnStr()
-    with closing( psycopg2.connect(connStr) ) as conn:
-        conn.autocommit = True
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            try:
-                cursor.execute(query, params)
-                if query.lower().find("returning id") != -1:
-                    id = cursor.fetchone()[0]
-                    return id
-                else:
-                    return None
-            except Exception as ex:
-                logging.error("Exception occurred!", exc_info=True)
-                return None
+    try:
+        with closing( psycopg2.connect(connStr) ) as conn:
+            conn.autocommit = True
+            with conn.cursor(cursor_factory=DictCursor) as cursor:
+                    cursor.execute(query, params)
+                    if query.lower().find("returning id") != -1:
+                        id = cursor.fetchone()[0]
+                        return id
+                    else:
+                        return None
+    except Exception as ex:
+        logger.error("Exception occurred!", exc_info=True)
+        return None
 
 
 def truncateTable(tableName):
     """"""
     query = f"TRUNCATE table {tableName}"
     connStr = _getConnStr()
-    with closing( psycopg2.connect(connStr) ) as conn:
-        conn.autocommit = True
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            try:
+    try:
+        with closing( psycopg2.connect(connStr) ) as conn:
+            conn.autocommit = True
+            with conn.cursor(cursor_factory=DictCursor) as cursor:
                 cursor.execute(query)
                 return 1
-            except Exception as ex:
-                logging.error("Exception occurred!", exc_info=True)
-                return None
+    except Exception as ex:
+        logger.error("Exception occurred!", exc_info=True)
+        return None
 
 
 def alterSeq(seqName: str, count: int):
     """"""
     query = f"ALTER SEQUENCE {seqName} RESTART WITH {count}"
     connStr = _getConnStr()
-    with closing( psycopg2.connect(connStr) ) as conn:
-        conn.autocommit = True
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            try:
-                cursor.execute(query)
-                return 1
-            except Exception as ex:
-                logging.error("Exception occurred!", exc_info=True)
-                return None
+    try:
+        with closing( psycopg2.connect(connStr) ) as conn:
+            conn.autocommit = True
+            with conn.cursor(cursor_factory=DictCursor) as cursor:
+                    cursor.execute(query)
+                    return 1
+    except Exception as ex:
+        logger.error("Exception occurred!", exc_info=True)
+        return None
 
 
 # def update(query: str, params: list = []):
@@ -141,7 +141,7 @@ def main_db(): # Test
 
     # Insert (correct)
     query = "INSERT INTO users (name, age) VALUES (%(Name)s, %(Age)s)"
-    result = select(query, params)
+    result = insert(query, params)
 
     # Insert (incorrect)
     query = "INSERT INTO users2 (name, age) VALUES (%(Name)s, %(Age)s);"
