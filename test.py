@@ -82,6 +82,68 @@ def main_test(): # Test
     # result = re.search(regExpStr, line)
     # if result:
     #     result = result.group()
+
+
+    
+    """ 
+    LOG STUFF
+     """
+     
+    if not logger:
+        return
+    
+    logger.debug('debug')
+    logger.info('info')
+    logger.warning('warning')
+    logger.error('error')
+    logger.critical('critical')
+     
+    """"""
+    
+    
+    """ 
+    DB STUFF
+     """
+     
+    # trunc
+    truncateTable("users")
+    truncateTable("users2")
+
+
+    # Select (correct)
+    query = "select * from users where Name = %(Name)s"
+    params = {
+        "Name" : "Alice"
+    }
+    result = select(query, params)
+
+    # Select (incorrect)
+    query = "select * from users2 where Name = %(Name)s"
+    params = {
+        "Name" : "Name"
+    }
+    result = select(query, params)
+
+
+    # Insert (correct)
+    query = "INSERT INTO users (name, age) VALUES (%(Name)s, %(Age)s) returning id;"
+    params = {
+        "Name" : "Zed"
+        ,"Age" : 256
+    }
+    result = select(query, params)
+
+    # Insert (correct)
+    query = "INSERT INTO users (name, age) VALUES (%(Name)s, %(Age)s)"
+    result = insert(query, params)
+
+    # Insert (incorrect)
+    query = "INSERT INTO users2 (name, age) VALUES (%(Name)s, %(Age)s);"
+    result = select(query, params)
+    
+    """"""
+    
+    
     
     db.truncateTable("simple_data")
 

@@ -108,53 +108,11 @@ def alterSeq(seqName: str, count: int):
 #endregion Functions
 
 
-#region MainCode
-def main_db(): # Test
-    """"""
-    # trunc
-    truncateTable("users")
-    truncateTable("users2")
-
-
-    # Select (correct)
-    query = "select * from users where Name = %(Name)s"
-    params = {
-        "Name" : "Alice"
-    }
-    result = select(query, params)
-
-    # Select (incorrect)
-    query = "select * from users2 where Name = %(Name)s"
-    params = {
-        "Name" : "Name"
-    }
-    result = select(query, params)
-
-
-    # Insert (correct)
-    query = "INSERT INTO users (name, age) VALUES (%(Name)s, %(Age)s) returning id;"
-    params = {
-        "Name" : "Zed"
-        ,"Age" : 256
-    }
-    result = select(query, params)
-
-    # Insert (correct)
-    query = "INSERT INTO users (name, age) VALUES (%(Name)s, %(Age)s)"
-    result = insert(query, params)
-
-    # Insert (incorrect)
-    query = "INSERT INTO users2 (name, age) VALUES (%(Name)s, %(Age)s);"
-    result = select(query, params)
-#endregion MainCode
-
-
 #region Startup
 logger = log.init()
 if __name__=="__main__":
     if logger:
         logger.info(f"This module is executing")
-        main_db()
 else:
     logger.info(f"This module is imported")
 #endregion Startup

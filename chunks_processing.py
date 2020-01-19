@@ -225,18 +225,11 @@ def parseChunk(chunk):
 #endregion Functions
 
 
-#region MainCode
-def main_chunks_processing(): # Test
-    """"""
-#endregion MainCode
-
-
 #region Startup
 logger = log.init()
 if __name__=="__main__":
     if logger:
         logger.info(f"This module is executing")
-        main_chunks_processing()
 else:
     logger.info(f"This module is imported")
 #endregion Startup

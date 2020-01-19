@@ -7,7 +7,6 @@ from datetime import datetime
 from send2trash import send2trash # Dependencies: pip install Send2Trash
 import shutil
 
-# from consts import *
 import log
 import consts
 import general_stuff
@@ -162,31 +161,11 @@ def deleteContentOfFolder(folderPath, isDeleteDirs=False, isSendToTrash=True):
 #endregion Functions
 
 
-#region MainCode
-def main_io(): # Test
-    """"""
-    # obj = None
-    # if obj:
-    #     logger.info(obj)
-    # pass
-    
-    # obj = {
-    #     "name":"name"
-    #     # ,"path":"path"
-    #     ,"encoding":"encoding"
-    # }
-    # fields = ("name", "path", "encoding")
-    # if all( k in obj for k in fields ):
-    #     logger.info("eee, boy")
-#endregion MainCode
-
-
 #region Startup
 logger = log.init()
 if __name__=="__main__":
     if logger:
         logger.info(f"This module is executing")
-        main_io()
 else:
     logger.info(f"This module is imported")
 #endregion Startup
