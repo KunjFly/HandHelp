@@ -90,18 +90,18 @@ def main():
     # """
 
     # Drop seq
-    # result = lib.alterSeq(seqName, 1)
+    # result = mysql_db.alterSeq(seqName, 1)
     # if not result:
     #     return
     
     # Trunc table
-    # result = lib.truncateTable(tableName)
+    # result = mysql_db.truncateTable(tableName)
     # if not result:
     #     return
     
  
     # for parsedChunk in parsedChunksLst:
-    #     result = lib.insert(query, parsedChunk)
+    #     result = mysql_db.insert(query, parsedChunk)
     #     if result:
     #         logger.info(f"Inserted row {result}")
 

@@ -2,7 +2,7 @@
 # import chardet # Dependencies: pip install chardet
 import log
 import io_extra
-import db
+import mysql_db
 import general_stuff
 #endregion Imports
 
@@ -106,8 +106,8 @@ def main_test(): # Test
      """
      
     # trunc
-    truncateTable("users")
-    truncateTable("users2")
+    mysql_db.truncateTable("users")
+    mysql_db.truncateTable("users2")
 
 
     # Select (correct)
@@ -115,14 +115,14 @@ def main_test(): # Test
     params = {
         "Name" : "Alice"
     }
-    result = select(query, params)
+    result = mysql_db.select(query, params)
 
     # Select (incorrect)
     query = "select * from users2 where Name = %(Name)s"
     params = {
         "Name" : "Name"
     }
-    result = select(query, params)
+    result = mysql_db.select(query, params)
 
 
     # Insert (correct)
@@ -131,21 +131,21 @@ def main_test(): # Test
         "Name" : "Zed"
         ,"Age" : 256
     }
-    result = select(query, params)
+    result = mysql_db.select(query, params)
 
     # Insert (correct)
     query = "INSERT INTO users (name, age) VALUES (%(Name)s, %(Age)s)"
-    result = insert(query, params)
+    result = mysql_db.insert(query, params)
 
     # Insert (incorrect)
     query = "INSERT INTO users2 (name, age) VALUES (%(Name)s, %(Age)s);"
-    result = select(query, params)
+    result = mysql_db.select(query, params)
     
     """"""
     
     
     
-    db.truncateTable("simple_data")
+    mysql_db.truncateTable("simple_data")
 
     query = """
         INSERT INTO simple_data (
@@ -166,7 +166,7 @@ def main_test(): # Test
 		,"answer_date": None
 		,"raw_text_rest": None
     }
-    result = db.insert(query, params)
+    result = mysql_db.insert(query, params)
     logger.info(result)
 #endregion MainCode
 
