@@ -1,5 +1,5 @@
-dbname: handhelp
-# dbname: test1
+# dbname: handhelp
+dbname: test_db
 user: postgres
-password: pass
+password: postgres
 host: localhost

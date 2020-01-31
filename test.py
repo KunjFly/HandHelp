@@ -2,8 +2,10 @@
 # import chardet # Dependencies: pip install chardet
 import log
 import io_extra
-import mysql_db
+import postgres_db
 import general_stuff
+from psycopg2 import sql
+# import sqlparse
 #endregion Imports
 
 
@@ -21,6 +23,10 @@ def getDictOrNone(val) -> dict :
 #region MainCode
 def main_test(): # Test
     """"""
+    
+    """ 
+    ENCODING STUFF
+     """
     # asciiStr ='''
     # '''
     # contentBytes = str.encode(asciiStr)
@@ -35,32 +41,11 @@ def main_test(): # Test
     # result = chardet.detect(contentBytes)
     # logger.info(result)
 
+    """"""
 
-    # result = getDictOrNone( {} )
-    # result = getDictOrNone( [] )
-
-
-    # alter seq
-    # tableName = "simple_data"
-    # tableName = "simple_data2"
-    # colName = "id"
-    # seqName = f"{tableName}_{colName}_seq"
-    # result = alterSeq(seqName, 1)
-
-    # if not result:
-    #     logger.info("not result")
-    # else:
-    #     logger.info(result)
-    
-    # logger.debug('debug')
-    # logger.info('info')
-    # logger.warning('warning')
-    # logger.error('error')
-    # logger.critical('critical')
-    
-    # global config
-    # config = config.getConfigValues()
-
+    """ 
+    REG EXPR
+     """
 
     # regExpStr = r"(?:<b>Спрашивает[ ]{0,})(?:.*?)(?:<\/b>)" # Non Captured 3 groups
     # result = re.findall(regExpStr, line, flags=re.IGNORECASE)
@@ -82,21 +67,22 @@ def main_test(): # Test
     # result = re.search(regExpStr, line)
     # if result:
     #     result = result.group()
-
+    
+    """"""
 
     
     """ 
     LOG STUFF
      """
      
-    if not logger:
-        return
+    # if not logger:
+    #     return
     
-    logger.debug('debug')
-    logger.info('info')
-    logger.warning('warning')
-    logger.error('error')
-    logger.critical('critical')
+    # logger.debug('debug')
+    # logger.info('info')
+    # logger.warning('warning')
+    # logger.error('error')
+    # logger.critical('critical')
      
     """"""
     
@@ -104,70 +90,104 @@ def main_test(): # Test
     """ 
     DB STUFF
      """
-     
-    # trunc
-    mysql_db.truncateTable("users")
-    mysql_db.truncateTable("users2")
+
+    # alter seq
+    # tableName = "simple_data"
+    # tableName = "simple_data2"
+    # colName = "id"
+    # seqName = f"{tableName}_{colName}_seq"
+    # result = alterSeq(seqName, 1)
+
+    # truncate
+    # postgres_db.truncateTable("users")    
+    # postgres_db.truncateTable("users2")
 
 
-    # Select (correct)
-    query = "select * from users where Name = %(Name)s"
-    params = {
-        "Name" : "Alice"
-    }
-    result = mysql_db.select(query, params)
+    # # Select (correct)
+    # query = "select * from users where Name = %(Name)s"
+    # params = {
+    #     "Name" : "Alice"
+    # }
+    # result = postgres_db.select(query, params)
 
-    # Select (incorrect)
-    query = "select * from users2 where Name = %(Name)s"
-    params = {
-        "Name" : "Name"
-    }
-    result = mysql_db.select(query, params)
+    # # Select (incorrect)
+    # query = "select * from users2 where Name = %(Name)s"
+    # params = {
+    #     "Name" : "Name"
+    # }
+    # result = postgres_db.select(query, params)
 
 
-    # Insert (correct)
-    query = "INSERT INTO users (name, age) VALUES (%(Name)s, %(Age)s) returning id;"
-    params = {
-        "Name" : "Zed"
-        ,"Age" : 256
-    }
-    result = mysql_db.select(query, params)
+    # # Insert (correct)
+    # query = "INSERT INTO users (name, age) VALUES (%(Name)s, %(Age)s) returning id;"
+    # params = {
+    #     "Name" : "Zed"
+    #     ,"Age" : 256
+    # }
+    # result = postgres_db.select(query, params)
 
-    # Insert (correct)
-    query = "INSERT INTO users (name, age) VALUES (%(Name)s, %(Age)s)"
-    result = mysql_db.insert(query, params)
+    # # Insert (correct)
+    # query = "INSERT INTO users (name, age) VALUES (%(Name)s, %(Age)s)"
+    # result = postgres_db.insert(query, params)
 
-    # Insert (incorrect)
-    query = "INSERT INTO users2 (name, age) VALUES (%(Name)s, %(Age)s);"
-    result = mysql_db.select(query, params)
+    # # Insert (incorrect)
+    # query = "INSERT INTO users2 (name, age) VALUES (%(Name)s, %(Age)s);"
+    # result = postgres_db.select(query, params)
+    
+
+    # postgres_db.truncateTable("simple_data")
+
+    # query = """
+    #     INSERT INTO simple_data (
+    #         raw_text, question_number, who_asks, tags, question, who_answers, answer, answer_date, raw_text_rest
+    #     )
+    #     VALUES (
+    #         %(raw_text)s, %(question_number)s, %(who_asks)s, %(tags)s, %(question)s, %(who_answers)s, %(answer)s, %(answer_date)s, %(raw_text_rest)s
+    #     ) returning id
+    # """
+    # params = {
+    #     "raw_text": "raw_text"
+	# 	,"question_number": None
+	# 	,"who_asks": None
+	# 	,"tags": None
+	# 	,"question": None
+	# 	,"who_answers": None
+	# 	,"answer": None
+	# 	,"answer_date": None
+	# 	,"raw_text_rest": None
+    # }
+    # result = postgres_db.insert(query, params)
+    # logger.info(result)
+    
+    # columns = ('varch', 'txt', 'numb')
+    # columns = ['varch', 'txt', 'numb']
+    # table   = 'test_t'
+    
+    # columns = sql.SQL(',').join( map(sql.Identifier, columns) )
+    # table   = sql.Identifier(table)
+    # stmt = sql.SQL('SELECT {} FROM {} LIMIT 5').format(columns, table)
+    # stmt = sql.SQL(f'SELECT {columns} FROM {table} LIMIT 5')
+    # logger.info(stmt)
+    
+    # query = sql.SQL('SELECT {} FROM {}').format(
+    #     sql.SQL(',').join(map(sql.Identifier, columns)),
+    #     sql.Identifier(table)
+    # )
+    # result  = postgres_db.select(columns, table)
+    
+
+    
+    query   = "insert into test_t (varch, txt, numb) values('2', '3', 4)"
+    result  = postgres_db.qExec(query)
+    logger.info(result)
+    
+    query   = "Select * from test_t"
+    result  = postgres_db.qExec(query)
+    # logger.info(type(result))
+    logger.info(result)
     
     """"""
     
-    
-    
-    mysql_db.truncateTable("simple_data")
-
-    query = """
-        INSERT INTO simple_data (
-            raw_text, question_number, who_asks, tags, question, who_answers, answer, answer_date, raw_text_rest
-        )
-        VALUES (
-            %(raw_text)s, %(question_number)s, %(who_asks)s, %(tags)s, %(question)s, %(who_answers)s, %(answer)s, %(answer_date)s, %(raw_text_rest)s
-        ) returning id
-    """
-    params = {
-        "raw_text": "raw_text"
-		,"question_number": None
-		,"who_asks": None
-		,"tags": None
-		,"question": None
-		,"who_answers": None
-		,"answer": None
-		,"answer_date": None
-		,"raw_text_rest": None
-    }
-    result = mysql_db.insert(query, params)
-    logger.info(result)
 #endregion MainCode
 
 
