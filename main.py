@@ -12,6 +12,7 @@ import postgres_db
 # region MainCode
 def main():
     """"""
+    logger.info("==================================================")
     logger.info("[Start script]")
 
 
@@ -19,7 +20,8 @@ def main():
     clear output and read input
      """
     io_extra.deleteContentOfFolder(consts.OUTPUT_FOLDER_LST)
-    fileName = "test-10-chunks.html"
+    fileName = "test-1-chunk.html"
+    # fileName = "test-10-chunks.html"
     # fileName = "test-100-chunks.html"
     # fileName = "test-1000-chunks.html"
     # fileName = "doc_1-11499.html"
@@ -49,6 +51,7 @@ def main():
         parsedChunk = chunks_processing.parseChunk(chunk)
         if parsedChunk:
             parsedChunksLst.append(parsedChunk)
+    
     
     """ 
     Write chunks to files
@@ -91,36 +94,78 @@ def main():
     """ 
     Write chunks to DB
      """
-
-    ### Successed
-    for chunk in successParsedChunks:
+    for chunk in parsedChunksLst:
         
-        # insert into [raw_consultations]
-        raw_text    = chunk.raw_text
-        is_done     = chunk.is_done
+        # [raw_consultations]
+        txt         = chunk["raw_text"]
+        txt_rest    = chunk["raw_text_rest"]
+        is_done     = 1 if chunk["is_done"] is True else 0
         query       = f"""
-            Insert into raw_consultations (txt, is_done)
-            values ({raw_text}, {is_done})
+            Insert into raw_consultations (txt, txt_rest, is_done)
+            values ('{txt}', '{txt_rest}', {is_done})
+            returning id
+        """
+        result      = postgres_db.qExec(query)
+        if not result:
+            continue
+        id_raw      = result
+        logger.info(f"id_raw returning id = {id_raw}")
+                
+        
+        # [consultations]
+        c_number    = chunk["question_number"]
+        c_date      = chunk["answer_date"]
+        c_date      = f"to_timestamp('{c_date}', 'dd.mm.yyyy')"
+        query       = f"""
+            Insert into consultations (c_number, id_raw, c_date)
+            values ({c_number}, {id_raw}, {c_date})
+            returning id
         """
         result      = postgres_db.qExec(query)
         if not result:
             continue
         
-        # insert into [consultations]
-        question_number    = chunk.question_number
-        is_done            = chunk.is_done
-        query              = f"""
-            Insert into raw_consultations (txt, is_done)
-            values ({raw_text}, {is_done})
+        id_consultation = result
+        logger.info(f"id_consultation returning id = {id_raw}")
+        
+
+        # [tags], [consultation_tags]
+        # TODO: remove brackets and parse tags by "comma"
+        txt         = chunk["tags"]
+        query       = f"""
+            select id from tags
+            where txt = '{txt}'
+        """
+        result      = postgres_db.qExec(query)
+        if result is False:
+            continue
+        
+        # Check if tag not exists in table
+        if len(result):
+            id_tag      = result[0][0]
+            logger.info(f"id_tag exists = {id_tag}")
+        else:
+            query       = f"""
+                Insert into tags (txt)
+                values ('{txt}')
+                returning id
+            """
+            result      = postgres_db.qExec(query)
+            if not result:
+                continue
+            
+            id_tag      = result
+            logger.info(f"id_tag returning id = {id_tag}")
+        
+        query       = f"""
+            Insert into consultation_tags (id_consultation, id_tag)
+            values ('{id_consultation}', '{id_tag}')
         """
         result      = postgres_db.qExec(query)
         if not result:
             continue
-
-        # tags
-
-        # consultation_tags
-
+        
+        
         # answers
         
         # consultants
@@ -134,12 +179,6 @@ def main():
         # questions
         
         # asking_persons
-        
-        
-    ### Fiasked
-    for chunk in successParsedChunks:
-
-        # raw_consultations
 
 
     logger.info("[End script]")

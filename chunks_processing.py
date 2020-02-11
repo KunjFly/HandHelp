@@ -61,16 +61,16 @@ def parseChunk(chunk):
         return None
         
     parsedChunk = {
-        ,"raw_text"         : chunk
-        ,"is_done"          : False
-		,"question_number"  : None
+        "raw_text"         : chunk     # +
+        ,"is_done"          : False     # +
+		,"question_number"  : None      # +
 		,"who_asks"         : None
-		,"tags"             : None
+		,"tags"             : None      # +
 		,"question"         : None
 		,"who_answers"      : None
 		,"answer"           : None
-		,"answer_date"      : None
-		,"raw_text_rest"    : None
+		,"answer_date"      : None      # +
+		,"raw_text_rest"    : None      # +
     }
 
 

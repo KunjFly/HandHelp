@@ -1,13 +1,3 @@
-DROP DATABASE IF EXISTS handhelp;
-CREATE DATABASE handhelp with
-	owner				= postgres
-	encoding			= 'UTF-8'
-	tablespace			= pg_default
-	connection limit	= -1
-;
-
-
-
 DO $$
 <<create_scheme_tables>>
 DECLARE
@@ -23,6 +13,7 @@ BEGIN
 	CREATE TABLE IF NOT EXISTS raw_consultations (
 		id				serial		primary key,
 		txt				text		NULL,
+		txt_rest		text		NULL,
 		is_done			smallint	NULL,
 		processed_date	timestamptz	not null default CURRENT_DATE
 	);
@@ -57,7 +48,7 @@ BEGIN
 	
 	CREATE TABLE IF NOT EXISTS tags (
 		id	serial			primary key,
-		txt	VARCHAR(256)	NULL
+		txt	VARCHAR(256)	UNIQUE
 	);
 	
 	
@@ -95,7 +86,7 @@ BEGIN
 	
 	CREATE TABLE IF NOT EXISTS consultants (
 		id		serial			primary key,
-		name	VARCHAR(256)	NULL
+		name	VARCHAR(256)	UNIQUE
 	);
 	
 	
@@ -124,7 +115,7 @@ BEGIN
 	
 	CREATE TABLE IF NOT EXISTS categories (
 		id	serial			primary key,
-		txt	VARCHAR(256)	NULL
+		txt	VARCHAR(256)	UNIQUE
 	);
 
 

@@ -32,11 +32,16 @@ def qExec(query):
     isInsert    = False
     isReturnId  = False
     
+    if not query:
+        logger.error("query is null!")
+        return
+    query       = query.strip()
+    
     if query.lower().startswith("select"):
         isSelect    = True
     if query.lower().startswith("insert"):
         isInsert    = True
-    if query.lower().endswith("isReturnId"):
+    if query.lower().endswith("returning id"):
         isReturnId  = True
     
     try:
