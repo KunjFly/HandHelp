@@ -8,7 +8,7 @@ BEGIN
 	*/
 	RAISE NOTICE 'Re-create table [raw_consultations]!';
 	
-	DROP TABLE IF EXISTS raw_consultations;
+	DROP TABLE IF EXISTS raw_consultations CASCADE;
 	
 	CREATE TABLE IF NOT EXISTS raw_consultations (
 		id				serial		primary key,
@@ -21,11 +21,11 @@ BEGIN
 	
 	RAISE NOTICE 'Re-create table [consultations]!';
 	
-	DROP TABLE IF EXISTS consultations;
+	DROP TABLE IF EXISTS consultations CASCADE;
 	
 	CREATE TABLE IF NOT EXISTS consultations (
 		id					serial			primary key,
-		c_number			integer			not null,	-- Question number
+		c_number			integer			UNIQUE,							-- Consultation number
 		id_raw				integer			REFERENCES raw_consultations,
 		-- id_asking_person	integer			not null,
 		-- id_question		integer			not null,
@@ -44,7 +44,7 @@ BEGIN
 	*/
 	RAISE NOTICE 'Re-create table [tags]!';
 	
-	DROP TABLE IF EXISTS tags;
+	DROP TABLE IF EXISTS tags CASCADE;
 	
 	CREATE TABLE IF NOT EXISTS tags (
 		id	serial			primary key,
@@ -54,7 +54,7 @@ BEGIN
 	
 	RAISE NOTICE 'Re-create table [consultation_tags]!';
 	
-	DROP TABLE IF EXISTS consultation_tags;
+	DROP TABLE IF EXISTS consultation_tags CASCADE;
 	
 	CREATE TABLE IF NOT EXISTS consultation_tags (
 		id				serial		primary key,
@@ -72,7 +72,7 @@ BEGIN
 	*/
 	RAISE NOTICE 'Re-create table [answers]!';
 	
-	DROP TABLE IF EXISTS answers;
+	DROP TABLE IF EXISTS answers CASCADE;
 	
 	CREATE TABLE IF NOT EXISTS answers (
 		id	serial		primary key,
@@ -82,7 +82,7 @@ BEGIN
 
 	RAISE NOTICE 'Re-create table [consultants]!';
 	
-	DROP TABLE IF EXISTS consultants;
+	DROP TABLE IF EXISTS consultants CASCADE;
 	
 	CREATE TABLE IF NOT EXISTS consultants (
 		id		serial			primary key,
@@ -92,7 +92,7 @@ BEGIN
 	
 	RAISE NOTICE 'Re-create table [consultant_answers]!';
 	
-	DROP TABLE IF EXISTS consultant_answers;
+	DROP TABLE IF EXISTS consultant_answers CASCADE;
 	
 	CREATE TABLE IF NOT EXISTS consultant_answers (
 		id					serial		primary key,
@@ -108,10 +108,11 @@ BEGIN
 	
 	/*
 		Consultation categories
+		TODO: fill later when I will parse consultations by categories.
 	*/
 	RAISE NOTICE 'Re-create table [categories]!';
 	
-	DROP TABLE IF EXISTS categories;
+	DROP TABLE IF EXISTS categories CASCADE;
 	
 	CREATE TABLE IF NOT EXISTS categories (
 		id	serial			primary key,
@@ -119,7 +120,7 @@ BEGIN
 	);
 
 
-	DROP TABLE IF EXISTS consultation_categories;
+	DROP TABLE IF EXISTS consultation_categories CASCADE;
 	CREATE TABLE IF NOT EXISTS consultation_categories (
 		id					serial		primary key,
 		id_consultation		integer		REFERENCES consultations,
@@ -130,21 +131,19 @@ BEGIN
 	*/
 	
 	
-	DROP TABLE IF EXISTS questions;
+	DROP TABLE IF EXISTS questions CASCADE;
 	CREATE TABLE IF NOT EXISTS questions (
-		id		serial			primary key,
-		-- id_c	integer			REFERENCES consultations (id_question),
-		id_c	integer			REFERENCES consultations,
-		txt		text			NULL
+		id				serial			primary key,
+		id_consultation	integer			REFERENCES consultations,
+		txt				text			NULL
 	);
 
 
-	DROP TABLE IF EXISTS asking_persons;
+	DROP TABLE IF EXISTS asking_persons CASCADE;
 	CREATE TABLE IF NOT EXISTS asking_persons (
-		id		serial			primary key,
-		-- id_c	integer			REFERENCES consultations (id_asking_person),
-		id_c	integer			REFERENCES consultations,
-		name	VARCHAR(256)	NULL
+		id				serial			primary key,
+		id_consultation	integer			REFERENCES consultations,
+		name			VARCHAR(256)	NULL
 	);
 	
 	

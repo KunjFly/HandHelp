@@ -166,20 +166,67 @@ def main():
             continue
         
         
-        # answers
+        # [answers], [consultants], [consultant_answers]
+        txt    = chunk["answer"]
+        query       = f"""
+            Insert into answers (txt)
+            values ('{txt}')
+            returning id
+        """
+        result      = postgres_db.qExec(query)
+        if not result:
+            continue
         
-        # consultants
+        id_answer   = result
+        logger.info(f"id_answer returning id = {id_answer}")
         
-        # consultant_answers
         
-        # categories
+        name    = chunk["who_answers"]
+        query       = f"""
+            Insert into consultants (name)
+            values ('{name}')
+            returning id
+        """
+        result      = postgres_db.qExec(query)
+        if not result:
+            continue
         
-        # consultation_categories
+        id_consultant   = result
+        logger.info(f"id_consultant returning id = {id_consultant}")
         
-        # questions
         
-        # asking_persons
-
+        query       = f"""
+            Insert into consultant_answers (id_consultation, id_consultant, id_answer)
+            values ({id_consultation}, {id_consultant}, {id_answer})
+        """
+        result      = postgres_db.qExec(query)
+        if not result:
+            continue
+        
+        
+        # [questions], [asking_persons]
+        txt    = chunk["question"]
+        query       = f"""
+            Insert into questions (id_consultation, txt)
+            values ({id_consultation}, '{txt}')
+        """
+        result      = postgres_db.qExec(query)
+        if not result:
+            continue
+        
+        
+        name    = chunk["who_asks"]
+        query       = f"""
+            Insert into asking_persons (id_consultation, name)
+            values ({id_consultation}, '{name}')
+        """
+        result      = postgres_db.qExec(query)
+        if not result:
+            continue
+        
+        
+        # TODO: fill [categories], [consultation_categories]
+        pass
 
     logger.info("[End script]")
 # endregion MainCode
