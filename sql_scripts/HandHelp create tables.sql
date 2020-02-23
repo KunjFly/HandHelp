@@ -1,3 +1,6 @@
+--------------------------------------------------
+--	Exec it in Quuery tool for DB handhelp
+--------------------------------------------------
 DO $$
 <<create_scheme_tables>>
 DECLARE

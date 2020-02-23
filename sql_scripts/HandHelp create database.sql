@@ -1,3 +1,7 @@
+--------------------------------------------------
+--	Exec it in Quuery tool for DB postgres
+--------------------------------------------------
+
 -- 1.
 DROP DATABASE IF EXISTS handhelp;
 

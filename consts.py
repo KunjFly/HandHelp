@@ -15,8 +15,8 @@ OUTPUT_FOLDER_LST = [ROOT_PATH, "files", "output"]
 #region Startup
 logger = log.init()
 if __name__=="__main__":
-    if logger:
-        logger.info(f"This module is executing")
+	if logger:
+		logger.info(f"This module is executing")
 else:
-    logger.info(f"This module is imported")
+	logger.info(f"This module is imported")
 #endregion Startup

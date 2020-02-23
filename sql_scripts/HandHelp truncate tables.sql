@@ -1,5 +1,6 @@
-
-
+--------------------------------------------------
+--	Exec it in Quuery tool for DB handhelp
+--------------------------------------------------
 DO $$
 <<truncate_scheme_tables>>
 DECLARE
