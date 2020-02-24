@@ -1,5 +1,5 @@
-dbname: handhelp
-# dbname: test_db
+host: localhost
 user: postgres
 password: postgres
-host: localhost
+dbname: postgres
+schema: handhelp

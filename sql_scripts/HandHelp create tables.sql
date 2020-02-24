@@ -1,5 +1,6 @@
 --------------------------------------------------
---	Exec it in Quuery tool for DB handhelp
+-- Run script in DBeaver
+-- Set scheme handhelp as default before executing
 --------------------------------------------------
 DO $$
 <<create_scheme_tables>>
@@ -18,7 +19,7 @@ BEGIN
 		txt				text		NULL,
 		txt_rest		text		NULL,
 		is_done			smallint	NULL,
-		processed_date	timestamptz	not null default CURRENT_DATE
+		processed_date	timestamptz	not null default CURRENT_TIMESTAMP
 	);
 	
 	

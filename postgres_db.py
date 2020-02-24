@@ -1,5 +1,5 @@
 #region Imports
-import psycopg2 # Dependencies: 1. Install Python (version < 3.8) [actual at 03.11.2019] 2. Install PostgreSQL 3. pip install psycopg2-binary
+import psycopg2 # Dependencies: 1. Install Python (version  3.7) [actual at 03.11.2019] 2. Install PostgreSQL 3. pip install psycopg2-binary
 from psycopg2.extras import DictCursor
 from psycopg2 import sql
 from inspect import stack
@@ -15,16 +15,17 @@ import io_extra
 def _getConnStr() -> str:
 	""""""
 	cfg = config.getConfigValues()
-	connStr = "host='{}' dbname='{}' user='{}' password='{}'".format(
+	connStr = "host='{}' dbname='{}' user='{}' password='{}' options='-c search_path={}'".format(
 		cfg["host"]
 		,cfg["dbname"]
 		,cfg["user"]
 		,cfg["password"]
+		,cfg["schema"]
 	)
 	return connStr
 
 
-def qExec(query):
+def qExec(query, params = None):
 	""""""
 	connStr = _getConnStr()
 	
@@ -32,6 +33,7 @@ def qExec(query):
 	isInsert    = False
 	isReturnId  = False
 	
+	# Process Query
 	if not query:
 		logger.error("query is null!")
 		return
@@ -52,7 +54,10 @@ def qExec(query):
 				conn.autocommit = True
 			
 			with conn.cursor(cursor_factory=DictCursor) as cursor:
-					cursor.execute(query)
+					if params:
+						cursor.execute(query, params)
+					else:
+						cursor.execute(query)
 
 					if isInsert and isReturnId:
 						id = cursor.fetchone()[0]

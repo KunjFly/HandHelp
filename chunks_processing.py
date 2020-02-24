@@ -190,13 +190,14 @@ def parseChunk(chunk):
 		# Get date
 		# https://www.regextester.com/97612
 		regExpStr = r"((3[01]|[12][0-9]|0?[1-9])\.(1[012]|0?[1-9])\.((?:19|20)\d{2}))"
-		result = re.search(regExpStr, fullResult)
+		# result = re.search(regExpStr, fullResult)	# In text can be more than one date
+		result = re.findall(regExpStr, fullResult)
 		if result is not None:
-			result = result.group()
-			parsedChunk["answer_date"] = result
+			# result = result.group()
+			parsedChunk["answer_date"] = result[-1][0]
 
 			# Remove part [answer_date] from chunk
-			chunk = chunk.replace(result, "")
+			chunk = chunk.replace(result[-1][0], "")
 		else:
 			parsedChunk["raw_text_rest"] = chunk
 			return parsedChunk
