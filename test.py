@@ -175,15 +175,27 @@ def main_test(): # Test
 	# )
 	# result  = postgres_db.select(columns, table)
 	
+	# t			= "Txt w/ '"
+	# t			= "Txt that ' consists ' some quotes ' "
+	# n			= 420
+	# query       = f"""
+	# 	Insert into test (t, n)
+	# 	values ('{t}', {n})
+	# """
+	# query	= query.replace("'", "''")
+
+	query       = f"""
+		Insert into test (t, n)
+		values (%s, %s)
+	"""
+	params		= ["Txt w/ '", 420]
+	result  = postgres_db.qExec(query, params)
+	
+	logger.info(result)
 
 	
-	query   = "insert into test_t (varch, txt, numb) values('2', '3', 4)"
-	result  = postgres_db.qExec(query)
-	logger.info(result)
-	
-	query   = "Select * from test_t"
-	result  = postgres_db.qExec(query)
-	# logger.info(type(result))
+	query   = "select * from test;"
+	result	= postgres_db.qExec(query)
 	logger.info(result)
 	
 	""""""

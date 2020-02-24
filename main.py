@@ -19,8 +19,8 @@ def main():
 	clear output and read input
 	 """
 	io_extra.deleteContentOfFolder(consts.OUTPUT_FOLDER_LST)
-	fileName = "test-1-chunk.html"
-	# fileName = "test-10-chunks.html"
+	# fileName = "test-1-chunk.html"
+	fileName = "test-10-chunks.html"
 	# fileName = "test-100-chunks.html"
 	# fileName = "test-1000-chunks.html"
 	# fileName = "doc_1-11499.html"
@@ -95,32 +95,42 @@ def main():
 	 """
 	for chunk in parsedChunksLst:
 		
-		# [raw_consultations]
+		# [raw_consultations], [consultations]
+		# INSERT INTO raw_consultations
 		txt         = chunk["raw_text"]
 		txt_rest    = chunk["raw_text_rest"]
 		is_done     = 1 if chunk["is_done"] is True else 0
+		params		= [
+			txt
+			,txt_rest
+			,is_done
+		]
 		query       = f"""
 			Insert into raw_consultations (txt, txt_rest, is_done)
-			values ('{txt}', '{txt_rest}', {is_done})
+			values (%s, %s, %s)
 			returning id
 		"""
-		result      = postgres_db.qExec(query)
+		result      = postgres_db.qExec(query, params)
 		if not result:
 			continue
 		id_raw      = result
 		logger.info(f"id_raw returning id = {id_raw}")
-				
-		
-		# [consultations]
+
+		# INSERT INTO consultations
 		c_number    = chunk["question_number"]
 		c_date      = chunk["answer_date"]
-		c_date      = f"to_timestamp('{c_date}', 'dd.mm.yyyy')"
+		# c_date      = f"to_timestamp('{c_date}', 'dd.mm.yyyy')"
+		params		= [
+			c_number
+			,id_raw
+			,c_date
+		]
 		query       = f"""
 			Insert into consultations (c_number, id_raw, c_date)
-			values ({c_number}, {id_raw}, {c_date})
+			values (%s, %s, %s)
 			returning id
 		"""
-		result      = postgres_db.qExec(query)
+		result      = postgres_db.qExec(query, params)
 		if not result:
 			continue
 		
@@ -130,12 +140,16 @@ def main():
 
 		# [tags], [consultation_tags]
 		# TODO: remove brackets and parse tags by "comma"
+		# SELECT FROM tags
 		txt         = chunk["tags"]
+		params		= [
+			txt
+		]
 		query       = f"""
 			select id from tags
-			where txt = '{txt}'
+			where txt = %s
 		"""
-		result      = postgres_db.qExec(query)
+		result      = postgres_db.qExec(query, params)
 		if result is False:
 			continue
 		
@@ -144,82 +158,129 @@ def main():
 			id_tag      = result[0][0]
 			logger.info(f"id_tag exists = {id_tag}")
 		else:
+			# INSERT INTO tags
+			params		= [
+				txt
+			]
 			query       = f"""
 				Insert into tags (txt)
-				values ('{txt}')
+				values (%s)
 				returning id
 			"""
-			result      = postgres_db.qExec(query)
+			result      = postgres_db.qExec(query, params)
 			if not result:
 				continue
 			
 			id_tag      = result
 			logger.info(f"id_tag returning id = {id_tag}")
 		
+		# INSERT INTO consultation_tags
+		params		= [
+			id_consultation
+			,id_tag
+		]
 		query       = f"""
 			Insert into consultation_tags (id_consultation, id_tag)
-			values ('{id_consultation}', '{id_tag}')
+			values (%s, %s)
 		"""
-		result      = postgres_db.qExec(query)
+		result      = postgres_db.qExec(query, params)
 		if not result:
 			continue
 		
 		
 		# [answers], [consultants], [consultant_answers]
+		# INSERT INTO answers
 		txt    = chunk["answer"]
+		params		= [
+			txt
+		]
 		query       = f"""
 			Insert into answers (txt)
-			values ('{txt}')
+			values (%s)
 			returning id
 		"""
-		result      = postgres_db.qExec(query)
+		result      = postgres_db.qExec(query, params)
 		if not result:
 			continue
 		
 		id_answer   = result
 		logger.info(f"id_answer returning id = {id_answer}")
 		
-		
+		# SELECT FROM consultants
 		name    = chunk["who_answers"]
+		params		= [
+			name
+		]
 		query       = f"""
-			Insert into consultants (name)
-			values ('{name}')
-			returning id
+			select id from consultants
+			where name = %s
 		"""
-		result      = postgres_db.qExec(query)
-		if not result:
+		result      = postgres_db.qExec(query, params)
+		if result is False:
 			continue
 		
-		id_consultant   = result
-		logger.info(f"id_consultant returning id = {id_consultant}")
+		# Check if consultant not exists in table
+		if len(result):
+			id_consultant      = result[0][0]
+			logger.info(f"id_consultant exists = {id_consultant}")
+		else:
+			# INSERT INTO consultants
+			params		= [
+				name
+			]
+			query       = f"""
+				Insert into consultants (name)
+				values (%s)
+				returning id
+			"""
+			result      = postgres_db.qExec(query, params)
+			if not result:
+				continue
+			
+			id_consultant   = result
+			logger.info(f"id_consultant returning id = {id_consultant}")
 		
-		
+		# INSERT INTO consultant_answers
+		params		= [
+			id_consultation
+			,id_consultant
+			,id_answer
+		]
 		query       = f"""
 			Insert into consultant_answers (id_consultation, id_consultant, id_answer)
-			values ({id_consultation}, {id_consultant}, {id_answer})
+			values (%s, %s, %s)
 		"""
-		result      = postgres_db.qExec(query)
+		result      = postgres_db.qExec(query, params)
 		if not result:
 			continue
 		
 		
 		# [questions], [asking_persons]
+		# INSERT INTO questions
 		txt    = chunk["question"]
+		params		= [
+			id_consultation
+			,txt
+		]
 		query       = f"""
 			Insert into questions (id_consultation, txt)
-			values ({id_consultation}, '{txt}')
+			values (%s, %s)
 		"""
-		result      = postgres_db.qExec(query)
+		result      = postgres_db.qExec(query, params)
 		if not result:
 			continue
 		
-		
+		# INSERT INTO asking_persons
 		name    = chunk["who_asks"]
+		params		= [
+			id_consultation
+			,name
+		]
 		query       = f"""
 			Insert into asking_persons (id_consultation, name)
-			values ({id_consultation}, '{name}')
+			values (%s, %s)
 		"""
-		result      = postgres_db.qExec(query)
+		result      = postgres_db.qExec(query, params)
 		if not result:
 			continue
 		
@@ -228,6 +289,7 @@ def main():
 		pass
 
 	logger.info("[End script]")
+	logger.info("==================================================")
 # endregion MainCode
 
 
