@@ -76,7 +76,7 @@ def parseChunk(chunk):
 
 
 	# Get [question_number]
-	regExpStr = r"(<a[ ]{0,}name=\".*?\">.*?[№])(.*?)(<\/a>)" # Captured 3 groups
+	regExpStr = r"(<a[ ]{0,}name=\".*?\">.*?[№])(.*?)(<\/a>|\/a>)"
 	result = re.findall(regExpStr, chunk, flags=re.IGNORECASE)
 
 	if result and len(result) > 0 and len(result[0][1]) > 0:
@@ -92,7 +92,7 @@ def parseChunk(chunk):
 
 
 	# Get [who_asks]
-	regExpStr = r"(<b>Спрашивает[ ]{0,})(.*?)(<\/b>)" # Captured 3 groups
+	regExpStr = r"(<b>\bВопрос\b |\bСпрашивают\b |\bСпрашивает\b |<b>\bПишет\b )(.*?)(<\/b>)"
 	result = re.findall(regExpStr, chunk, flags=re.IGNORECASE)
 
 	if result and len(result) > 0 and len(result[0][1]) > 0:
@@ -113,7 +113,7 @@ def parseChunk(chunk):
 
 	# Get [tags] (it can be empty)
 	# https://stackoverflow.com/questions/11592033/regex-match-text-between-tags
-	regExpStr = r"(<i>)(.*?)(<\/i>)" # Captured 3 groups
+	regExpStr = r"(<i>)(.*?)(<\/i>)"
 	result = re.findall(regExpStr, chunk, flags=re.IGNORECASE)
 
 	if result and len(result) > 0 and len(result[0][1]) > 0:
@@ -126,25 +126,29 @@ def parseChunk(chunk):
 		regExpStr = r"<[^>]*>?"
 		result = re.sub(regExpStr, "", result)
 
-		# Remove first "(" if exists
-		regExpStr = r"^[(]"
-		result = result.replace(regExpStr, "")
+		if result and len(result) > 0:
+			result = result.strip()
+			# Remove last ")" if exists
+			if result[0] == '(':
+				result	= result[1:]
+			
+			# Remove first "(" if exists
+			if result[-1] == ')':
+				result	= result[:-1]
 
-		# Remove last ")" if exists
-		regExpStr = r"[)]$"
-		result = result.replace(regExpStr, "")
-
-		result = result.strip()
-		parsedChunk["tags"] = result
-
+			result	= result.split(',')
+			result	= [x.strip() for x in result]	# trim all vals in list
+			parsedChunk["tags"] = result
+  
 
 	# Get [who_answers]
 	whoAnswers = ""
-	regExpStr = r"(<b>Отвечает[ ]{0,})(.*?)(<\/b>)" # Captured 3 groups
+	regExpStr = r"(<P>)?(<b>)?( )?(\bОтвечает\b|\bОтаечает\b)([\w\s.-]*)(:)?(</b>)?"
 	result = re.findall(regExpStr, chunk, flags=re.IGNORECASE)
-	if result and len(result) > 0 and len(result[0][1]) > 0:
+
+	if result and len(result) > 0 and len(result[0][4]) > 0:
 		whoAnswers = "".join(result[0])
-		result = result[0][1]
+		result = result[0][4]
 		
 		# remove last semicolon if exists
 		regExpStr = r"[:]$"
@@ -159,6 +163,7 @@ def parseChunk(chunk):
 	
 	# Get [question]
 	result = chunk.split(whoAnswers)
+
 	if result and len(result) > 0:
 		result = result[0]
 		chunk = chunk.replace(result, "") # remove part [question] from chunk
@@ -182,17 +187,17 @@ def parseChunk(chunk):
 
 	# Get [answer_date]
 	# Get last line with date
-	regExpStr = r"^(.*?)(<\/h2>)" # Captured 2 groups
-	# result = re.findall(regExpStr, chunk, flags=re.IGNORECASE or re.DOTALL) # If error then use "|"
+	regExpStr = r"(<br>)?(\d+(\.\d+)*)(<\/font><\/h2>|<\/font>|<\/h2>)"
 	result = re.findall(regExpStr, chunk, flags=re.IGNORECASE | re.DOTALL)
-	if result and len(result) > 0 and len(result[0][0]) > 0:
+
+	if result and len(result) > 0 and len(result[0][1]) > 0:
 		fullResult = "".join(result[0])
 		# Get date
 		# https://www.regextester.com/97612
 		regExpStr = r"((3[01]|[12][0-9]|0?[1-9])\.(1[012]|0?[1-9])\.((?:19|20)\d{2}))"
 		# result = re.search(regExpStr, fullResult)	# In text can be more than one date
 		result = re.findall(regExpStr, fullResult)
-		if result is not None:
+		if result is not None and len(result) > 0:
 			# result = result.group()
 			parsedChunk["answer_date"] = result[-1][0]
 

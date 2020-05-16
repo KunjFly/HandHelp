@@ -7,6 +7,8 @@ DO $$
 DECLARE
 BEGIN
 	
+	RAISE NOTICE '=====Run script [truncate_scheme_tables]=====';
+	
 	/*
 		Consultations main tables
 	*/
@@ -86,5 +88,6 @@ BEGIN
 	TRUNCATE TABLE asking_persons CASCADE;
 	ALTER SEQUENCE asking_persons_id_seq RESTART WITH 1;
 	
-	
+	RAISE NOTICE '=====End script [truncate_scheme_tables]=====';
+
 END truncate_scheme_tables $$;

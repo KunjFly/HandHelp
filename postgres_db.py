@@ -1,5 +1,5 @@
 #region Imports
-import psycopg2 # Dependencies: 1. Install Python (version  3.7) [actual at 03.11.2019] 2. Install PostgreSQL 3. pip install psycopg2-binary
+import psycopg2 # Dependencies: 1. Install Python (version  3.7) [actual at 03.11.2019] 2. Install PostgreSQL 3. pip install psycopg2
 from psycopg2.extras import DictCursor
 from psycopg2 import sql
 from inspect import stack

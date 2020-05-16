@@ -12,8 +12,7 @@
 
 	Upgrade pip
 	python -m pip install --upgrade pip
-
-
-[TODO]
-	- Use default logging system
-	- Conctat all input files
+	
+TODO:
+- Run SQL-script before exec py srcipt
+- Find out what consultation numbers are missing

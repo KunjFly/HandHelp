@@ -30,7 +30,7 @@ BEGIN
 	CREATE TABLE IF NOT EXISTS consultations (
 		id					serial			primary key,
 		c_number			integer			UNIQUE,							-- Consultation number
-		id_raw				integer			REFERENCES raw_consultations,
+		id_raw				integer			REFERENCES raw_consultations ON DELETE CASCADE,
 		-- id_asking_person	integer			not null,
 		-- id_question		integer			not null,
 		-- id_answer		integer			not null,
@@ -52,7 +52,7 @@ BEGIN
 	
 	CREATE TABLE IF NOT EXISTS tags (
 		id	serial			primary key,
-		txt	VARCHAR(256)	UNIQUE
+		txt	VARCHAR(1024)	UNIQUE
 	);
 	
 	
@@ -62,8 +62,8 @@ BEGIN
 	
 	CREATE TABLE IF NOT EXISTS consultation_tags (
 		id				serial		primary key,
-		id_consultation	integer		REFERENCES consultations,
-		id_tag			integer		REFERENCES tags
+		id_consultation	integer		REFERENCES consultations ON DELETE CASCADE,
+		id_tag			integer		REFERENCES tags ON DELETE CASCADE
 	);
 	/*
 		/Consultation tags
@@ -90,7 +90,7 @@ BEGIN
 	
 	CREATE TABLE IF NOT EXISTS consultants (
 		id		serial			primary key,
-		name	VARCHAR(256)	UNIQUE
+		name	VARCHAR(1024)	UNIQUE
 	);
 	
 	
@@ -100,9 +100,9 @@ BEGIN
 	
 	CREATE TABLE IF NOT EXISTS consultant_answers (
 		id					serial		primary key,
-		id_consultation		integer		REFERENCES consultations,
-		id_consultant		integer		REFERENCES consultants,
-		id_answer			integer		REFERENCES answers
+		id_consultation		integer		REFERENCES consultations ON DELETE CASCADE,
+		id_consultant		integer		REFERENCES consultants ON DELETE CASCADE,
+		id_answer			integer		REFERENCES answers ON DELETE CASCADE
 	);
 	/*
 		/Consultant answers
@@ -120,15 +120,15 @@ BEGIN
 	
 	CREATE TABLE IF NOT EXISTS categories (
 		id	serial			primary key,
-		txt	VARCHAR(256)	UNIQUE
+		txt	VARCHAR(1024)	UNIQUE
 	);
 
 
 	DROP TABLE IF EXISTS consultation_categories CASCADE;
 	CREATE TABLE IF NOT EXISTS consultation_categories (
 		id					serial		primary key,
-		id_consultation		integer		REFERENCES consultations,
-		id_category			integer		REFERENCES categories
+		id_consultation		integer		REFERENCES consultations ON DELETE CASCADE,
+		id_category			integer		REFERENCES categories ON DELETE CASCADE
 	);
 	/*
 		/Consultation categories
@@ -138,7 +138,7 @@ BEGIN
 	DROP TABLE IF EXISTS questions CASCADE;
 	CREATE TABLE IF NOT EXISTS questions (
 		id				serial			primary key,
-		id_consultation	integer			REFERENCES consultations,
+		id_consultation	integer			REFERENCES consultations ON DELETE CASCADE,
 		txt				text			NULL
 	);
 
@@ -146,8 +146,8 @@ BEGIN
 	DROP TABLE IF EXISTS asking_persons CASCADE;
 	CREATE TABLE IF NOT EXISTS asking_persons (
 		id				serial			primary key,
-		id_consultation	integer			REFERENCES consultations,
-		name			VARCHAR(256)	NULL
+		id_consultation	integer			REFERENCES consultations ON DELETE CASCADE,
+		name			VARCHAR(1024)	NULL
 	);
 	
 	

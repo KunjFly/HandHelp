@@ -103,6 +103,9 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+
+
 # Other stuff
 files/
 /log.txt
+failed_cases/
