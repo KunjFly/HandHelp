@@ -41,7 +41,38 @@ select * from consultation_tags;
 -- select * from consultation_categories;
 
 
+/*
+ *	Get missing numbers in sequence 
+ */
+select
+--	num as missing
+	string_agg(numbers.num::varchar, ', ') as tags_concat
+from generate_series(4001, 5000) as numbers(num)
+left join consultations on
+	(numbers.num = consultations.c_number)
+where 1=1
+	and consultations.c_number is null;
 
+
+/*
+ *	Find doubles 
+ */
+select * from consultations ou
+where (
+	select count(*) from consultations inr
+	where inr.c_number = ou.c_number
+) > 1;
+
+
+/*
+ * Count of all consultations
+ */
+select count(*) from consultations;
+
+
+/*
+ * Show not parsed consults
+ */
 select
 	consults.id 
 	,consults.c_number			c_number
@@ -52,6 +83,7 @@ select
 	,answers.txt				answer
 	,con_tags_l.tags_concat		tags
 	,raw_cons.is_done			raw_con_is_done
+	,raw_cons.problem_place		problem_place
 	,raw_cons.txt				raw_con_txt
 	,raw_cons.txt_rest			raw_con_txt_rest
 	,raw_cons.processed_date	raw_con_proc_date
@@ -82,5 +114,6 @@ where	1 = 1
 	and consults.id			= ask_persons.id_consultation
 --	and raw_cons.is_done 	= 0
 order by
-	c_number 
+	c_number
+--	problem_place
 ;

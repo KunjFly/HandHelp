@@ -4,7 +4,6 @@
 		"editor.insertSpaces": false,
 		"editor.tabSize": 4
 	},
-	"python.pythonPath": "C:\\Python\\Python37\\python.exe",
 	"python.linting.pylintEnabled": true,
 	"python.linting.enabled": true
 }

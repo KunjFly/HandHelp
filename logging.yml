@@ -21,7 +21,7 @@ handlers:
         class: logging.handlers.RotatingFileHandler
         level: DEBUG
         formatter: root_formatter
-        filename: all_info.log
+        filename: _all_info.log
         maxBytes: 134217728         # 128MB
         backupCount: 20
         encoding: utf8
@@ -30,7 +30,7 @@ handlers:
         class: logging.handlers.RotatingFileHandler
         level: ERROR
         formatter: root_formatter
-        filename: only_errors.log
+        filename: _only_errors.log
         maxBytes: 134217728         # 128MB
         backupCount: 20
         encoding: utf8

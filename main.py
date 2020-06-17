@@ -28,12 +28,17 @@ def main():
 	""" 
 
 	fileName = "test-1-chunk.html"
+
+	# fileName = "1. doc 1-1000.html"
+	# fileName = "2. doc 1001-2000.html"
+	# fileName = "3. doc 2001-3000.html"
+	# fileName = "4. doc 3001-4000.html"
+	# fileName = "5. doc 4001-5000.html"
 	
-	# fileName = "test-10-chunks.html"
-	# fileName = "test-100-chunks.html"		# but actually this file have only 98 consultations (missing 11427, 11428)
-	# fileName = "test-1000-chunks.html"
 	
-	fileName = "doc1-203.html"
+	
+	
+
 	# fileName = "doc_1-11499.html"
 	# fileName = "doc_11500-13157.html"
 
@@ -114,19 +119,29 @@ def main():
 	 """
 	for chunk in parsedChunksLst:
 		
+		
+		# if not chunk["raw_text_rest"]:
+		# 	"""
+		# 	# There is no need to save Success parsed chunks
+		# 	"""
+		# 	continue
+		
+		
 		# [raw_consultations], [consultations]
 		# INSERT INTO raw_consultations
-		txt         = chunk["raw_text"]
-		txt_rest    = chunk["raw_text_rest"]
-		is_done     = 1 if chunk["is_done"] is True else 0
+		txt         	= chunk["raw_text"]
+		txt_rest    	= chunk["raw_text_rest"]
+		is_done     	= 1 if chunk["is_done"] is True else 0
+		problem_place	= chunk["problem_place"]
 		params		= [
 			txt
 			,txt_rest
 			,is_done
+			,problem_place
 		]
 		query       = f"""
-			Insert into raw_consultations (txt, txt_rest, is_done)
-			values (%s, %s, %s)
+			Insert into raw_consultations (txt, txt_rest, is_done, problem_place)
+			values (%s, %s, %s, %s)
 			returning id
 		"""
 		result      = postgres_db.qExec(query, params)

@@ -72,6 +72,7 @@ def parseChunk(chunk):
 		,"answer"           : None
 		,"answer_date"      : None
 		,"raw_text_rest"    : None
+		,"problem_place"	: None
 	}
 
 
@@ -88,16 +89,17 @@ def parseChunk(chunk):
 		parsedChunk["question_number"] = result
 	else:
 		parsedChunk["raw_text_rest"] = chunk
+		parsedChunk["problem_place"] = "question_number"
 		return parsedChunk
 
 
 	# Get [who_asks]
-	regExpStr = r"(<b>\bВопрос\b |\bСпрашивают\b |\bСпрашивает\b |<b>\bПишет\b )(.*?)(<\/b>)"
+	regExpStr = r"(<b>|<b><p>|<pb>|<br>)(Вопрос |Спрашивают |Спрашивает |Cпрашивает |Спрашиваете |Пишет |Обращается |Спрашиваешь |Пишут |Дополняет |Пишете |Пишет, |Сапрашивает |Спрашивает|Спраивает |Спрашиваю |Спрашиваеь )(.*?)(<\/b>|!</b>|<br>|\.)"
 	result = re.findall(regExpStr, chunk, flags=re.IGNORECASE)
 
-	if result and len(result) > 0 and len(result[0][1]) > 0:
+	if result and len(result) > 0 and len(result[0][2]) > 0:
 		fullResult = "".join(result[0])
-		result = result[0][1]
+		result = result[0][2]
 		chunk = chunk.replace(fullResult, "") # remove part [who_asks] from chunk
 
 		# remove last semicolon if exists
@@ -108,13 +110,17 @@ def parseChunk(chunk):
 		parsedChunk["who_asks"] = result
 	else:
 		parsedChunk["raw_text_rest"] = chunk
+		parsedChunk["problem_place"] = "who_asks"
 		return parsedChunk
 
 
 	# Get [tags] (it can be empty)
 	# https://stackoverflow.com/questions/11592033/regex-match-text-between-tags
-	regExpStr = r"(<i>)(.*?)(<\/i>)"
-	result = re.findall(regExpStr, chunk, flags=re.IGNORECASE)
+	# <br><i>(<a href="http://www.hand-help.ru/doc2.6.html" class="link2"><b>иное</b></a>)</i>
+	regExpStr = r"(<br><i>\()(.*)(\)<\/i>)"
+	regExpStr = r"\n\r(<br><i>\()(.*)(\)<\/i>)\n\r"
+	
+	result = re.findall(regExpStr, chunk, flags=re.IGNORECASE | re.MULTILINE)
 
 	if result and len(result) > 0 and len(result[0][1]) > 0:
 		fullResult = "".join(result[0])
@@ -143,12 +149,15 @@ def parseChunk(chunk):
 
 	# Get [who_answers]
 	whoAnswers = ""
-	regExpStr = r"(<P>)?(<b>)?( )?(\bОтвечает\b|\bОтаечает\b)([\w\s.-]*)(:)?(</b>)?"
+	# regExpStr = r"(<p><b>|<b><p>|<p>|<b>)( )?(Отвечает|Отаечает|Ответ)([\w\s.-/(/)]*)(:<\/b>|<\/b>|:)"
+	regExpStr = r"(<p><b>|<b><p>|<p>|<b>|<p><br>|<P><b><a.*>|<br>)( )?(Отвечает |Отаечает |Ответ |Ответ:|Пишет |Отвеачет |твечает |Отвечаете )(.*?)(:<\/b>|<\/b>|:)"
+	
+	
 	result = re.findall(regExpStr, chunk, flags=re.IGNORECASE)
 
-	if result and len(result) > 0 and len(result[0][4]) > 0:
+	if result and len(result) > 0 and len(result[0][3]) is not None:
 		whoAnswers = "".join(result[0])
-		result = result[0][4]
+		result = result[0][3]
 		
 		# remove last semicolon if exists
 		regExpStr = r"[:]$"
@@ -158,6 +167,7 @@ def parseChunk(chunk):
 		parsedChunk["who_answers"] = result
 	else:
 		parsedChunk["raw_text_rest"] = chunk
+		parsedChunk["problem_place"] = "who_answers"
 		return parsedChunk
 
 	
@@ -178,36 +188,27 @@ def parseChunk(chunk):
 		regExpStr = r"<[^>]*>?"
 		result = re.sub(regExpStr, "", result)
 
+		# TODO: add if result == ''
+		
+
 		result = result.strip()
 		parsedChunk["question"] = result
 	else:
 		parsedChunk["raw_text_rest"] = chunk
+		parsedChunk["problem_place"] = "question"
 		return parsedChunk
 
 
 	# Get [answer_date]
 	# Get last line with date
-	regExpStr = r"(<br>)?(\d+(\.\d+)*)(<\/font><\/h2>|<\/font>|<\/h2>)"
-	result = re.findall(regExpStr, chunk, flags=re.IGNORECASE | re.DOTALL)
+	regExpStr = r'(<br>)?(\d{1,2}[/.-]\d{2}[/.-]\d{2,4})(\n\r|\.)?(<\/font><\/h2>|<font><\/h2>|<\/font>|<\/h2>|\.)'
+	result = re.findall(regExpStr, chunk, flags=re.IGNORECASE | re.MULTILINE)
 
 	if result and len(result) > 0 and len(result[0][1]) > 0:
-		fullResult = "".join(result[0])
-		# Get date
-		# https://www.regextester.com/97612
-		regExpStr = r"((3[01]|[12][0-9]|0?[1-9])\.(1[012]|0?[1-9])\.((?:19|20)\d{2}))"
-		# result = re.search(regExpStr, fullResult)	# In text can be more than one date
-		result = re.findall(regExpStr, fullResult)
-		if result is not None and len(result) > 0:
-			# result = result.group()
-			parsedChunk["answer_date"] = result[-1][0]
-
-			# Remove part [answer_date] from chunk
-			chunk = chunk.replace(result[-1][0], "")
-		else:
-			parsedChunk["raw_text_rest"] = chunk
-			return parsedChunk
+		parsedChunk["answer_date"] = result[0][1]
 	else:
 		parsedChunk["raw_text_rest"] = chunk
+		parsedChunk["problem_place"] = "answer_date"
 		return parsedChunk
 	
 

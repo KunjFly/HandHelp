@@ -15,11 +15,12 @@ BEGIN
 	DROP TABLE IF EXISTS raw_consultations CASCADE;
 	
 	CREATE TABLE IF NOT EXISTS raw_consultations (
-		id				serial		primary key,
-		txt				text		NULL,
-		txt_rest		text		NULL,
-		is_done			smallint	NULL,
-		processed_date	timestamptz	not null default CURRENT_TIMESTAMP
+		id				serial			primary key,
+		txt				text			NULL,
+		txt_rest		text			NULL,
+		is_done			smallint		NULL,
+		problem_place	varchar(265)	NULL,
+		processed_date	timestamptz		not null default CURRENT_TIMESTAMP
 	);
 	
 	
