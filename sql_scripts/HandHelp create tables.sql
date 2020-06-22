@@ -30,7 +30,7 @@ BEGIN
 	
 	CREATE TABLE IF NOT EXISTS consultations (
 		id					serial			primary key,
-		c_number			integer			UNIQUE,							-- Consultation number
+		c_number			varchar(10)		UNIQUE,							-- Consultation number
 		id_raw				integer			REFERENCES raw_consultations ON DELETE CASCADE,
 		-- id_asking_person	integer			not null,
 		-- id_question		integer			not null,
@@ -53,7 +53,7 @@ BEGIN
 	
 	CREATE TABLE IF NOT EXISTS tags (
 		id	serial			primary key,
-		txt	VARCHAR(1024)	UNIQUE
+		txt	VARCHAR(2048)	UNIQUE
 	);
 	
 	
@@ -91,7 +91,7 @@ BEGIN
 	
 	CREATE TABLE IF NOT EXISTS consultants (
 		id		serial			primary key,
-		name	VARCHAR(1024)	UNIQUE
+		name	VARCHAR(2048)	UNIQUE
 	);
 	
 	
@@ -121,7 +121,7 @@ BEGIN
 	
 	CREATE TABLE IF NOT EXISTS categories (
 		id	serial			primary key,
-		txt	VARCHAR(1024)	UNIQUE
+		txt	VARCHAR(2048)	UNIQUE
 	);
 
 
@@ -148,7 +148,7 @@ BEGIN
 	CREATE TABLE IF NOT EXISTS asking_persons (
 		id				serial			primary key,
 		id_consultation	integer			REFERENCES consultations ON DELETE CASCADE,
-		name			VARCHAR(1024)	NULL
+		name			VARCHAR(2048)	NULL
 	);
 	
 	

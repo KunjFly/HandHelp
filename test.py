@@ -1,5 +1,7 @@
 #region Imports
 # import chardet # Dependencies: pip install chardet
+import html
+
 import log
 import io_extra
 import postgres_db
@@ -184,20 +186,31 @@ def main_test(): # Test
 	# """
 	# query	= query.replace("'", "''")
 
-	query       = f"""
-		Insert into test (t, n)
-		values (%s, %s)
-	"""
-	params		= ["Txt w/ '", 420]
-	result  = postgres_db.qExec(query, params)
+	# query       = f"""
+	# 	Insert into test (t, n)
+	# 	values (%s, %s)
+	# """
+	# params		= ["Txt w/ '", 420]
+	# result  = postgres_db.qExec(query, params)
 	
-	logger.info(result)
+	# logger.info(result)
 
 	
-	query   = "select * from test;"
-	result	= postgres_db.qExec(query)
-	logger.info(result)
+	# query   = "select * from test;"
+	# result	= postgres_db.qExec(query)
+	# logger.info(result)
 	
+	""""""
+
+
+	""" 
+	HTML STUFF
+	 """
+
+	s		= "<br><br><b>Отвечает&nbsp;Валентина&nbsp;Максовна&nbsp;Фридман, эксперт-консультант по правовым вопросам Центра содействия реформе уголовного правосудия:</b><br>"
+	result	= html.unescape(s)
+	print(result)
+
 	""""""
 	
 #endregion MainCode

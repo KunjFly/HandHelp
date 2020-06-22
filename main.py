@@ -21,12 +21,6 @@ def main():
 	io_extra.deleteContentOfFolder(consts.OUTPUT_FOLDER_LST)
 
 
-	"""
-	!!!!!
-		Current status: fix errors for processed file doc_1-11499.html
-	!!!!!
-	""" 
-
 	fileName = "test-1-chunk.html"
 
 	# fileName = "1. doc 1-1000.html"
@@ -34,6 +28,15 @@ def main():
 	# fileName = "3. doc 2001-3000.html"
 	# fileName = "4. doc 3001-4000.html"
 	# fileName = "5. doc 4001-5000.html"
+	# fileName = "6. doc 5001-6000.html"
+	# fileName = "7. doc 6001-7000.html"
+	# fileName = "8. doc 7001-8000.html"
+	# fileName = "9. doc 8001-9000.html"
+	# fileName = "10. doc 9001-10000.html"
+	# fileName = "11. doc 10001-11000.html"
+	# fileName = "12. doc 11001-12000.html"
+	fileName = "13. doc 12001-13000.html"
+	# fileName = "14. doc 13001-13520.html"
 	
 	
 	

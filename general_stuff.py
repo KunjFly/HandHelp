@@ -1,6 +1,7 @@
 #region Imports
 from inspect import stack
 import time
+import re
 
 import log
 #endregion Imports
@@ -10,6 +11,18 @@ import log
 def getNowTS(): # Get now timestamp w/ milliseconds
 	""""""
 	return time.time() * 1000
+
+
+# Remove all HTML tags
+# https://stackoverflow.com/questions/822452/strip-html-from-text-javascript
+def removeHtmlTags(str_in):
+	regExpStr = r"<[^>]*>?"
+	result = re.sub(regExpStr, "", str_in)
+
+	if result == '':
+		return str_in
+	return result
+	
 #endregion Functions
 
 

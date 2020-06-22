@@ -1,9 +1,12 @@
 #region Imports
 from inspect import stack
 import re
+import os
+import html
 
 import log
 import io_extra
+import general_stuff
 #endregion Imports
 
 
@@ -44,7 +47,7 @@ def linesLstToChunksLst(linesLst):
 				chunksLst.append(chunkText)
 				chunkText = "" # prepare for next chunk
 
-		chunkText += line + "\r"
+		chunkText += line
 
 	# Last chunk in file
 	chunksLst.append(chunkText)
@@ -76,9 +79,13 @@ def parseChunk(chunk):
 	}
 
 
+	# Replace HTML entities
+	chunk	= html.unescape(chunk)
+
+
 	# Get [question_number]
-	regExpStr = r"(<a[ ]{0,}name=\".*?\">.*?[№])(.*?)(<\/a>|\/a>)"
-	result = re.findall(regExpStr, chunk, flags=re.IGNORECASE)
+	regExpStr	= r"(<a[ ]{0,}name=\".*?\">.*?[№])(.*?)(<\/a>|\/a>)"
+	result		= re.findall(regExpStr, chunk, flags=re.IGNORECASE)
 
 	if result and len(result) > 0 and len(result[0][1]) > 0:
 		fullResult = "".join(result[0])
@@ -91,11 +98,85 @@ def parseChunk(chunk):
 		parsedChunk["raw_text_rest"] = chunk
 		parsedChunk["problem_place"] = "question_number"
 		return parsedChunk
+	
+
+	# Get [note] (TODO)
+	"""
+	Examples:
+
+	# <br><font size=-1 face="Arial" color="red">Эта консультация неактуальна, т.к. Верховный Суд занял иную позицию, применив изменения закона к ранее осужденным в наиболее гуманном смысле. Приговоры многих осужденных за наркотики должны быть пересмотрены. Определениями от 14 января 2013 года по <a href="http://hand-help.ru/documents/vs_pavlenko.doc" class="link3"><b>делу Павленко</b></a> и от 22 января 2013 года по <a href="http://hand-help.ru/documents/vs_samarin.doc" class="link3"><b>делу Самарина</b></a>. ВС разрешил неопределенность в толковании закона в пользу ранее осужденных. Их действия должны быть переквалифицированы. Постановление Правительства № 1002 о новых размерах применимо к ранее осужденным в части, улучшающей их положение. См. <a href="http://hand-help.ru/doc6.10.html" class="link3"><b>комментарий</b></a></font>.
+
+	# <br><font size=-1 face="Arial" color="red">Эта консультация неактуальна в части, касающейся применения к ранее осужденным Постановления Правительства № 1002 о новых размерах. Верховный Суд занял иную позицию, применив изменения закона к ранее осужденным в наиболее гуманном смысле. Приговоры многих осужденных за наркотики должны быть пересмотрены. Определениями от 14 января 2013 года по <a href="http://hand-help.ru/documents/vs_pavlenko.doc" class="link3"><b>делу Павленко</b></a> и от 22 января 2013 года по <a href="http://hand-help.ru/documents/vs_samarin.doc" class="link3"><b>делу Самарина</b></a>. ВС разрешил неопределенность в толковании закона в пользу ранее осужденных. Их действия должны быть переквалифицированы. См. <a href="http://hand-help.ru/doc6.10.html" class="link3"><b>комментарий</b></a></font>.
+
+	<b><font color="Red">ВНИМАНИЕ!</font></b>
+	<br>После публикации этого ответа Президиум Верховного Суда РФ принял <a href="http://hand-help.ru/documents/vs_post_prezidiuma_26.12.2012.pdf" class="link2"><b>Постановление</b></a> от 26 декабря 2012 года.Осужденные, чьи приговоры вступили в силу до 2013 года, <b><u>не теряют право на их пересмотр</u></b> (вопреки буквальному смыслу закона). 
+	<br>См. <a href="doc3.html#nov165" class="link3"><b>комментарий</b></b></a><br>
+	
+	# <br><font color="red"><b>Исправлено 01.10.2011</b></font></font></h2>
+
+	# <br><font color="Red"><b>Исправлено 01.10.2011</b></font></h2>
+
+	"""
+
+
+	# Get previous consultations (TODO)
+	"""
+	Examples:
+
+	# <br>предыдущий <a href="http://hand-help.ru/doc2.7.html#vopr11481" class="link2"><b>11481</b></a>
+
+	# <br><a href="http://www.hand-help.ru/doc2.1.13.html" class="link2"><b>Предыдущий</b></a> № 10899
+
+	# <br>предыдущий<a href="http://www.hand-help.ru/doc2.1.17.html" class="link2"><b>11076</b></a> 
+
+	# <br>предыдущий вопрос<a href="http://www.hand-help.ru/doc2.1.17.html" class="link2"><b>№11081</b></a>
+
+	# <br>предыдущий 11122
+
+	# <br>Предыдущий №10934
+
+	# <br><a href="http://www.hand-help.ru/doc2.1.7.html" class="link2"><b>Предыдущий вопрос №10979</b></a>.
+
+	# <br>предыдущий вопрос № 11005
+
+	# <br>предыдущий 11008, 11006
+
+	# <br>Предыдущий 10980 <a href="http://hand-help.ru/doc2.12.html" class="link2"><b>в международной защите</b></a>
+
+	# <br>предыдущий № 10901
+
+	# <br>предыдущий вопрос <b>№ 10891</b>
+
+	# <br>предыдущий вопрос<a href="http://www.hand-help.ru/doc2.1.1.html#vopr10858" class="link2"><b>№10858</b></a> 
+
+	# <br>Предыдущие вопросы №№:<a href="http://www.hand-help.ru/doc2.9.html#10620" class="link2"><b>№10620</b></a>, <a href="http://www.hand-help.ru/doc2.9.html#10649" class="link2"><b>№10649</b></a>, <a href="http://www.hand-help.ru/doc2.1.51.html#10657" class="link2"><b>№10657</b></a>.
+
+	# <br>предыдущий <a href="http://www.hand-help.ru/doc2.1.13.html#vopr10434" class="link2"><b>№ 10434</b></a>
+
+	# <br><b>(предыдущий: №10196)</b>
+
+	# <br><b>(предыдущий 10167 в рубрике «<a href="http://hand-help.ru/doc2.1.3.html" class="link2"><b>размеры</b></a>»)</b>
+
+	# <br><i>(предыдущий 10046 <a href="http://www.hand-help.ru/doc2.1.7.html" class="link2"><b>сбыт</b></a>)</i>
+
+	# <br><b><i>(Предыдущий:№9946)</i></b>
+
+	# <br><i>(предыдущий 9989)</i>
+
+	# <br>Предыдущий <a href="http://hand-help.ru/doc2.1.13.html#vopr664" class="link2"><b>вопрос № 664</b></a>.
+
+	# <br>Предыдущий <a href="http://hand-help.ru/doc15.html#vopr10852" class="link2"><b>10852</b></a> и <a href="http://hand-help.ru/doc2.1.13.html#vopr12875" class="link2"><b>12875</b></a>
+
+	# <br>предыдущий <a href="http://hand-help.ru/doc2.12.html#vopr7333" class="link2"><b>№ 7333</b></a>
+
+	# <br><i>предыдущий <a href="http://hand-help.ru/doc2.1.13.html#vopr7348" class="link2"><b>№ 7348</b></a></i>
+
+	"""
 
 
 	# Get [who_asks]
-	regExpStr = r"(<b>|<b><p>|<pb>|<br>)(Вопрос |Спрашивают |Спрашивает |Cпрашивает |Спрашиваете |Пишет |Обращается |Спрашиваешь |Пишут |Дополняет |Пишете |Пишет, |Сапрашивает |Спрашивает|Спраивает |Спрашиваю |Спрашиваеь )(.*?)(<\/b>|!</b>|<br>|\.)"
-	result = re.findall(regExpStr, chunk, flags=re.IGNORECASE)
+	regExpStr	= r"(<b>|<b><p>|<pb>|<br>)(Вопрос |Спрашивают |Спрашивает |Cпрашивает |Спрашиваете |Пишет |Обращается |Спрашиваешь |Пишут |Дополняет |Пишете |Пишет, |Сапрашивает |Спрашивает|Спраивает |Спрашиваю |Спрашиваеь |Спрашиват | Спрашивает |Спращивает |Скрашивает |Спрашиваеьт |Српрашивает |Спрашвиает |Спрашиванет |CСпрашивает |Спрашивае |Спрашивет |Спрашишвает |Спрашвает |Cпрашиваетт |Спрашивали |Спрашшивает )(.*?)(<\/b>|!<\/b>|<br>|\.:<\/b>|\.<\/b>|\.:|\.)"
+	result		= re.findall(regExpStr, chunk, flags=re.IGNORECASE)
 
 	if result and len(result) > 0 and len(result[0][2]) > 0:
 		fullResult = "".join(result[0])
@@ -117,20 +198,15 @@ def parseChunk(chunk):
 	# Get [tags] (it can be empty)
 	# https://stackoverflow.com/questions/11592033/regex-match-text-between-tags
 	# <br><i>(<a href="http://www.hand-help.ru/doc2.6.html" class="link2"><b>иное</b></a>)</i>
-	regExpStr = r"(<br><i>\()(.*)(\)<\/i>)"
-	regExpStr = r"\n\r(<br><i>\()(.*)(\)<\/i>)\n\r"
-	
-	result = re.findall(regExpStr, chunk, flags=re.IGNORECASE | re.MULTILINE)
+	regExpStr	= r"\n(<br><i>\()(.*)(\)<\/i>)\n"
+	result		= re.findall(regExpStr, chunk, flags=re.IGNORECASE | re.MULTILINE)
 
 	if result and len(result) > 0 and len(result[0][1]) > 0:
 		fullResult = "".join(result[0])
 		result = result[0][1]
 		chunk = chunk.replace(fullResult, "") # remove part [tags] from chunk
 
-		# Remove all HTML tags
-		# https://stackoverflow.com/questions/822452/strip-html-from-text-javascript
-		regExpStr = r"<[^>]*>?"
-		result = re.sub(regExpStr, "", result)
+		# result	= general_stuff.removeHtmlTags(result)
 
 		if result and len(result) > 0:
 			result = result.strip()
@@ -148,12 +224,9 @@ def parseChunk(chunk):
   
 
 	# Get [who_answers]
-	whoAnswers = ""
-	# regExpStr = r"(<p><b>|<b><p>|<p>|<b>)( )?(Отвечает|Отаечает|Ответ)([\w\s.-/(/)]*)(:<\/b>|<\/b>|:)"
-	regExpStr = r"(<p><b>|<b><p>|<p>|<b>|<p><br>|<P><b><a.*>|<br>)( )?(Отвечает |Отаечает |Ответ |Ответ:|Пишет |Отвеачет |твечает |Отвечаете )(.*?)(:<\/b>|<\/b>|:)"
-	
-	
-	result = re.findall(regExpStr, chunk, flags=re.IGNORECASE)
+	whoAnswers	= ""
+	regExpStr	= r"(<p><b>|<b><p>|<p>|<b>|<p><br>|<P><b><a.*>|<br>|<br><\/b>|<br><b>|<<br>b>|<br><b\.|<br><br>БиЮ|<br><br><b>)( )?(Отвечает |Отаечает |Ответ |Ответ:|Пишет |Отвеачет |твечает |Отвечаете |Отвечает |Отвеачает |Отвевает |Отвечает<a.*><b> |Отвечают )(.*?)(:<\/b>|<\/b>|:)"
+	result		= re.findall(regExpStr, chunk, flags=re.IGNORECASE)
 
 	if result and len(result) > 0 and len(result[0][3]) is not None:
 		whoAnswers = "".join(result[0])
@@ -179,17 +252,12 @@ def parseChunk(chunk):
 		chunk = chunk.replace(result, "") # remove part [question] from chunk
 		chunk = chunk.replace(whoAnswers, "") # remove part [who_answers] from chunk
 
-		# Replace <br> on \r\n
+		# Replace <br> on new line
 		# https://stackoverflow.com/questions/5959415/jquery-javascript-regex-replace-br-with-n
-		regExpStr = r"<br\s*[\/]?>"
-		result = re.sub(regExpStr, "\r\n", result)
+		# regExpStr = r"<br\s*[\/]?>"
+		# result = re.sub(regExpStr, os.linesep, result)
 
-		# Remove all HTML tags
-		regExpStr = r"<[^>]*>?"
-		result = re.sub(regExpStr, "", result)
-
-		# TODO: add if result == ''
-		
+		# result	= general_stuff.removeHtmlTags(result)
 
 		result = result.strip()
 		parsedChunk["question"] = result
@@ -201,32 +269,30 @@ def parseChunk(chunk):
 
 	# Get [answer_date]
 	# Get last line with date
-	regExpStr = r'(<br>)?(\d{1,2}[/.-]\d{2}[/.-]\d{2,4})(\n\r|\.)?(<\/font><\/h2>|<font><\/h2>|<\/font>|<\/h2>|\.)'
-	result = re.findall(regExpStr, chunk, flags=re.IGNORECASE | re.MULTILINE)
+	answerDate	= ""
+	regExpStr	= r"(<br>|<br>\n|\n</ol>|</ol>\n|</ul>\n|\n)(\d{1,2}[/.-]\d{2}[/.-]\d{2,4})(\n|\.)?(<\/font><\/h2>|<font><\/h2>|<\/font>|<\/h2>|\.|</b></font>)"
+	result		= re.findall(regExpStr, chunk, flags=re.IGNORECASE | re.MULTILINE)
 
-	if result and len(result) > 0 and len(result[0][1]) > 0:
-		parsedChunk["answer_date"] = result[0][1]
+	if result and len(result) > 0 and len(result[-1][1]) > 0:
+		parsedChunk["answer_date"]	= result[-1][1]
+		answerDate					= "".join(result[-1])
+		chunk						= chunk.replace(answerDate, "") # remove part [answer_date] from chunk
 	else:
 		parsedChunk["raw_text_rest"] = chunk
 		parsedChunk["problem_place"] = "answer_date"
 		return parsedChunk
-	
-
-	# Get [previous_questions]
-	# TODO
 
 
 	# Get [answer]
-	# Replace <br> on \r\n
+
+	# Replace <br> on new line
 	# https://stackoverflow.com/questions/5959415/jquery-javascript-regex-replace-br-with-n
-	regExpStr = r"<br\s*[\/]?>"
-	result = re.sub(regExpStr, "\r\n", chunk)
+	# regExpStr = r"<br\s*[\/]?>"
+	# result = re.sub(regExpStr, os.linesep, chunk)
 
-	# Remove all HTML tags
-	regExpStr = r"<[^>]*>?"
-	result = re.sub(regExpStr, "", result)
-
-	result = result.strip()
+	result		= chunk
+	# result		= general_stuff.removeHtmlTags(chunk)
+	result		= result.strip()
 	parsedChunk["answer"] = result
 
 
