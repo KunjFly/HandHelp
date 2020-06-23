@@ -21,6 +21,8 @@ def main():
 	io_extra.deleteContentOfFolder(consts.OUTPUT_FOLDER_LST)
 
 
+	# TODO: Read all files from folder
+
 	fileName = "test-1-chunk.html"
 
 	# fileName = "1. doc 1-1000.html"
@@ -35,18 +37,9 @@ def main():
 	# fileName = "10. doc 9001-10000.html"
 	# fileName = "11. doc 10001-11000.html"
 	# fileName = "12. doc 11001-12000.html"
-	fileName = "13. doc 12001-13000.html"
+	# fileName = "13. doc 12001-13000.html"
 	# fileName = "14. doc 13001-13520.html"
 	
-	
-	
-	
-
-	# fileName = "doc_1-11499.html"
-	# fileName = "doc_11500-13157.html"
-
-	# linesLst = lib.readFileAsLinesLst(fileName, encoding="ascii")
-	# linesLst = lib.readFileAsLinesLst(fileName, encoding="latin-1")
 	linesLst = io_extra.readFileAsLinesLst(fileName, encoding="Windows-1251")
 	
 	
@@ -166,22 +159,23 @@ def main():
 		if result is False:
 			continue
 
-		# Check if consultation not exists in table
+		# Check if consultation exists in table
 		if len(result):
-			id_tag      = result[0][0]
-			logger.info(f"c_number exists[{c_number}]! Go to next chunk.")
-			continue
+			id_cons      = result[0][0]
+			logger.info(f"id_cons[{id_cons}] c_number[{c_number}] exists!")
 		
 		# INSERT INTO consultations
 		c_date      = chunk["answer_date"]
+		c_note		= chunk["note"]
 		params		= [
 			id_raw
 			,c_number
 			,c_date
+			,c_note
 		]
 		query       = f"""
-			Insert into consultations (id_raw, c_number, c_date)
-			values (%s, %s, %s)
+			Insert into consultations (id_raw, c_number, c_date, c_note)
+			values (%s, %s, %s, %s)
 			returning id
 		"""
 		result      = postgres_db.qExec(query, params)

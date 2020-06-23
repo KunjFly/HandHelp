@@ -76,6 +76,7 @@ def parseChunk(chunk):
 		,"answer_date"      : None
 		,"raw_text_rest"    : None
 		,"problem_place"	: None
+		,"note"				: None
 	}
 
 
@@ -100,76 +101,77 @@ def parseChunk(chunk):
 		return parsedChunk
 	
 
-	# Get [note] (TODO)
-	"""
-	Examples:
+	# Get [note]  (it can be empty)
+	regExpStr	= r"(<br><font .*color=\"red\">|<br><font .*color=\"red\"><b>|<br><b><font .*color=\"Red\">ВНИМАНИЕ!<\/font><\/b>\n|<b><font .*color=\"Red\">ВНИМАНИЕ!<\/font><\/b>\n)(.*)(\n.*)?(<\/b><\/a><\/font>\.|<\/b><\/a><\/font>|<\/b><\/b><\/a><br>\.|<\/b><\/b><\/a><br>|<\/b><\/font><\/h2>|<\/b><\/font><\/font><\/h2>)"
+	result		= re.findall(regExpStr, chunk, flags=re.IGNORECASE | re.MULTILINE)
 
-	# <br><font size=-1 face="Arial" color="red">Эта консультация неактуальна, т.к. Верховный Суд занял иную позицию, применив изменения закона к ранее осужденным в наиболее гуманном смысле. Приговоры многих осужденных за наркотики должны быть пересмотрены. Определениями от 14 января 2013 года по <a href="http://hand-help.ru/documents/vs_pavlenko.doc" class="link3"><b>делу Павленко</b></a> и от 22 января 2013 года по <a href="http://hand-help.ru/documents/vs_samarin.doc" class="link3"><b>делу Самарина</b></a>. ВС разрешил неопределенность в толковании закона в пользу ранее осужденных. Их действия должны быть переквалифицированы. Постановление Правительства № 1002 о новых размерах применимо к ранее осужденным в части, улучшающей их положение. См. <a href="http://hand-help.ru/doc6.10.html" class="link3"><b>комментарий</b></a></font>.
+	if result and len(result) > 0:
 
-	# <br><font size=-1 face="Arial" color="red">Эта консультация неактуальна в части, касающейся применения к ранее осужденным Постановления Правительства № 1002 о новых размерах. Верховный Суд занял иную позицию, применив изменения закона к ранее осужденным в наиболее гуманном смысле. Приговоры многих осужденных за наркотики должны быть пересмотрены. Определениями от 14 января 2013 года по <a href="http://hand-help.ru/documents/vs_pavlenko.doc" class="link3"><b>делу Павленко</b></a> и от 22 января 2013 года по <a href="http://hand-help.ru/documents/vs_samarin.doc" class="link3"><b>делу Самарина</b></a>. ВС разрешил неопределенность в толковании закона в пользу ранее осужденных. Их действия должны быть переквалифицированы. См. <a href="http://hand-help.ru/doc6.10.html" class="link3"><b>комментарий</b></a></font>.
+		notesfullResult	= ""
+		for item in result:
+			note	= "".join(item)
+			chunk		= chunk.replace(note, "") # remove part [note] from chunk
 
-	<b><font color="Red">ВНИМАНИЕ!</font></b>
-	<br>После публикации этого ответа Президиум Верховного Суда РФ принял <a href="http://hand-help.ru/documents/vs_post_prezidiuma_26.12.2012.pdf" class="link2"><b>Постановление</b></a> от 26 декабря 2012 года.Осужденные, чьи приговоры вступили в силу до 2013 года, <b><u>не теряют право на их пересмотр</u></b> (вопреки буквальному смыслу закона). 
-	<br>См. <a href="doc3.html#nov165" class="link3"><b>комментарий</b></b></a><br>
+			if notesfullResult == "":
+				notesfullResult	= note
+			else:
+				notesfullResult	+= ";\n" + note
+		
+		notesfullResult = notesfullResult.strip()
+		parsedChunk["note"] = notesfullResult
 	
-	# <br><font color="red"><b>Исправлено 01.10.2011</b></font></font></h2>
-
-	# <br><font color="Red"><b>Исправлено 01.10.2011</b></font></h2>
-
-	"""
-
 
 	# Get previous consultations (TODO)
 	"""
-	Examples:
+Examples:
 
-	# <br>предыдущий <a href="http://hand-help.ru/doc2.7.html#vopr11481" class="link2"><b>11481</b></a>
+<br>предыдущий <a href="http://hand-help.ru/doc2.7.html#vopr11481" class="link2"><b>11481</b></a>
 
-	# <br><a href="http://www.hand-help.ru/doc2.1.13.html" class="link2"><b>Предыдущий</b></a> № 10899
+<br><a href="http://www.hand-help.ru/doc2.1.13.html" class="link2"><b>Предыдущий</b></a> № 10899
 
-	# <br>предыдущий<a href="http://www.hand-help.ru/doc2.1.17.html" class="link2"><b>11076</b></a> 
+<br>предыдущий<a href="http://www.hand-help.ru/doc2.1.17.html" class="link2"><b>11076</b></a> 
 
-	# <br>предыдущий вопрос<a href="http://www.hand-help.ru/doc2.1.17.html" class="link2"><b>№11081</b></a>
+<br>предыдущий вопрос<a href="http://www.hand-help.ru/doc2.1.17.html" class="link2"><b>№11081</b></a>
 
-	# <br>предыдущий 11122
+<br>предыдущий 11122
 
-	# <br>Предыдущий №10934
+<br>Предыдущий №10934
 
-	# <br><a href="http://www.hand-help.ru/doc2.1.7.html" class="link2"><b>Предыдущий вопрос №10979</b></a>.
+<br><a href="http://www.hand-help.ru/doc2.1.7.html" class="link2"><b>Предыдущий вопрос №10979</b></a>.
 
-	# <br>предыдущий вопрос № 11005
+<br>предыдущий вопрос № 11005
 
-	# <br>предыдущий 11008, 11006
+<br>предыдущий 11008, 11006
 
-	# <br>Предыдущий 10980 <a href="http://hand-help.ru/doc2.12.html" class="link2"><b>в международной защите</b></a>
+<br>Предыдущий 10980 <a href="http://hand-help.ru/doc2.12.html" class="link2"><b>в международной защите</b></a>
 
-	# <br>предыдущий № 10901
+<br>предыдущий № 10901
 
-	# <br>предыдущий вопрос <b>№ 10891</b>
+<br>предыдущий вопрос <b>№ 10891</b>
 
-	# <br>предыдущий вопрос<a href="http://www.hand-help.ru/doc2.1.1.html#vopr10858" class="link2"><b>№10858</b></a> 
+<br>предыдущий вопрос<a href="http://www.hand-help.ru/doc2.1.1.html#vopr10858" class="link2"><b>№10858</b></a> 
 
-	# <br>Предыдущие вопросы №№:<a href="http://www.hand-help.ru/doc2.9.html#10620" class="link2"><b>№10620</b></a>, <a href="http://www.hand-help.ru/doc2.9.html#10649" class="link2"><b>№10649</b></a>, <a href="http://www.hand-help.ru/doc2.1.51.html#10657" class="link2"><b>№10657</b></a>.
+<br>Предыдущие вопросы №№:<a href="http://www.hand-help.ru/doc2.9.html#10620" class="link2"><b>№10620</b></a>, <a href="http://www.hand-help.ru/doc2.9.html#10649" class="link2"><b>№10649</b></a>, <a href="http://www.hand-help.ru/doc2.1.51.html#10657" class="link2"><b>№10657</b></a>.
 
-	# <br>предыдущий <a href="http://www.hand-help.ru/doc2.1.13.html#vopr10434" class="link2"><b>№ 10434</b></a>
+<br>предыдущий <a href="http://www.hand-help.ru/doc2.1.13.html#vopr10434" class="link2"><b>№ 10434</b></a>
 
-	# <br><b>(предыдущий: №10196)</b>
+<br><b>(предыдущий: №10196)</b>
 
-	# <br><b>(предыдущий 10167 в рубрике «<a href="http://hand-help.ru/doc2.1.3.html" class="link2"><b>размеры</b></a>»)</b>
+<br><b>(предыдущий 10167 в рубрике «<a href="http://hand-help.ru/doc2.1.3.html" class="link2"><b>размеры</b></a>»)</b>
 
-	# <br><i>(предыдущий 10046 <a href="http://www.hand-help.ru/doc2.1.7.html" class="link2"><b>сбыт</b></a>)</i>
+<br><i>(предыдущий 10046 <a href="http://www.hand-help.ru/doc2.1.7.html" class="link2"><b>сбыт</b></a>)</i>
 
-	# <br><b><i>(Предыдущий:№9946)</i></b>
+<br><b><i>(Предыдущий:№9946)</i></b>
 
-	# <br><i>(предыдущий 9989)</i>
+<br><i>(предыдущий 9989)</i>
 
-	# <br>Предыдущий <a href="http://hand-help.ru/doc2.1.13.html#vopr664" class="link2"><b>вопрос № 664</b></a>.
+<br>Предыдущий <a href="http://hand-help.ru/doc2.1.13.html#vopr664" class="link2"><b>вопрос № 664</b></a>.
 
-	# <br>Предыдущий <a href="http://hand-help.ru/doc15.html#vopr10852" class="link2"><b>10852</b></a> и <a href="http://hand-help.ru/doc2.1.13.html#vopr12875" class="link2"><b>12875</b></a>
+<br>Предыдущий <a href="http://hand-help.ru/doc15.html#vopr10852" class="link2"><b>10852</b></a> и <a href="http://hand-help.ru/doc2.1.13.html#vopr12875" class="link2"><b>12875</b></a>
 
-	# <br>предыдущий <a href="http://hand-help.ru/doc2.12.html#vopr7333" class="link2"><b>№ 7333</b></a>
+<br>предыдущий <a href="http://hand-help.ru/doc2.12.html#vopr7333" class="link2"><b>№ 7333</b></a>
 
-	# <br><i>предыдущий <a href="http://hand-help.ru/doc2.1.13.html#vopr7348" class="link2"><b>№ 7348</b></a></i>
+<br><i>предыдущий <a href="http://hand-help.ru/doc2.1.13.html#vopr7348" class="link2"><b>№ 7348</b></a></i>
 
 	"""
 

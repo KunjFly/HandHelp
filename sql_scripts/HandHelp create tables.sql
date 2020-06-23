@@ -36,7 +36,8 @@ BEGIN
 		-- id_question		integer			not null,
 		-- id_answer		integer			not null,
 		c_date				timestamptz		null,
-		is_outdated			smallint		null
+		is_outdated			smallint		null,
+		c_note				text			null
 	);
 	/*
 		/Consultations main tables
