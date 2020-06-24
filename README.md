@@ -34,11 +34,14 @@
 
 1-1000:
 	totally processed
-		994
-	not parsed (wrong template of consultation)
-		21
+		996
+	doubles
+		642	2
+		882	2
 	missing
 		61, 83, 187, 188, 189, 190, 191, 192
+	not parsed (wrong template of consultation)
+		23
 
 
 1001-2000:

@@ -30,14 +30,15 @@ BEGIN
 	
 	CREATE TABLE IF NOT EXISTS consultations (
 		id					serial			primary key,
-		c_number			varchar(10)		UNIQUE,							-- Consultation number
+		c_number			varchar(10)		not null,										-- Consultation number
 		id_raw				integer			REFERENCES raw_consultations ON DELETE CASCADE,
 		-- id_asking_person	integer			not null,
 		-- id_question		integer			not null,
 		-- id_answer		integer			not null,
 		c_date				timestamptz		null,
 		is_outdated			smallint		null,
-		c_note				text			null
+		c_note				text			null,
+		c_previous			text			null
 	);
 	/*
 		/Consultations main tables
@@ -81,8 +82,9 @@ BEGIN
 	DROP TABLE IF EXISTS answers CASCADE;
 	
 	CREATE TABLE IF NOT EXISTS answers (
-		id	serial		primary key,
-		txt	text		null
+		id				serial		primary key,
+		txt				text		null,
+		txt_edited		text		null	-- W/o some tags (<b>)
 	);
 
 
@@ -141,7 +143,8 @@ BEGIN
 	CREATE TABLE IF NOT EXISTS questions (
 		id				serial			primary key,
 		id_consultation	integer			REFERENCES consultations ON DELETE CASCADE,
-		txt				text			NULL
+		txt				text			null,
+		txt_edited		text			null	-- W/o some tags (<b>)
 	);
 
 

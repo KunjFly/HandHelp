@@ -167,15 +167,17 @@ def main():
 		# INSERT INTO consultations
 		c_date      = chunk["answer_date"]
 		c_note		= chunk["note"]
+		c_previous	= chunk["previous"]
 		params		= [
 			id_raw
 			,c_number
 			,c_date
 			,c_note
+			,c_previous
 		]
 		query       = f"""
-			Insert into consultations (id_raw, c_number, c_date, c_note)
-			values (%s, %s, %s, %s)
+			Insert into consultations (id_raw, c_number, c_date, c_note, c_previous)
+			values (%s, %s, %s, %s, %s)
 			returning id
 		"""
 		result      = postgres_db.qExec(query, params)
@@ -243,13 +245,15 @@ def main():
 		
 		# [answers], [consultants], [consultant_answers]
 		# INSERT INTO answers
-		txt    = chunk["answer"]
+		txt			= chunk["answer"]
+		txt_edited	= chunk["answer_edited"]
 		params		= [
 			txt
+			,txt_edited
 		]
 		query       = f"""
-			Insert into answers (txt)
-			values (%s)
+			Insert into answers (txt, txt_edited)
+			values (%s, %s)
 			returning id
 		"""
 		result      = postgres_db.qExec(query, params)
@@ -310,14 +314,16 @@ def main():
 		
 		# [questions], [asking_persons]
 		# INSERT INTO questions
-		txt    = chunk["question"]
+		txt			= chunk["question"]
+		txt_edited	= chunk["question_edited"]
 		params		= [
 			id_consultation
 			,txt
+			,txt_edited
 		]
 		query       = f"""
-			Insert into questions (id_consultation, txt)
-			values (%s, %s)
+			Insert into questions (id_consultation, txt, txt_edited)
+			values (%s, %s, %s)
 		"""
 		result      = postgres_db.qExec(query, params)
 		if not result:

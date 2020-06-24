@@ -71,12 +71,15 @@ def parseChunk(chunk):
 		,"who_asks"         : None
 		,"tags"             : None
 		,"question"         : None
+		,"question_edited"	: None
 		,"who_answers"      : None
 		,"answer"           : None
+		,"answer_edited"	: None
 		,"answer_date"      : None
 		,"raw_text_rest"    : None
 		,"problem_place"	: None
 		,"note"				: None
+		,"previous"			: None
 	}
 
 
@@ -89,91 +92,48 @@ def parseChunk(chunk):
 	result		= re.findall(regExpStr, chunk, flags=re.IGNORECASE)
 
 	if result and len(result) > 0 and len(result[0][1]) > 0:
-		fullResult = "".join(result[0])
-		result = result[0][1]
-		chunk = chunk.replace(fullResult, "") # remove part [question_number] from chunk
+		fullResultQnum	= "".join(result[0])
+		result			= result[0][1]
+		chunk			= chunk.replace(fullResultQnum, "") # remove part [question_number] from chunk
 
-		result = result.strip()
+		result			= result.strip()
 		parsedChunk["question_number"] = result
 	else:
 		parsedChunk["raw_text_rest"] = chunk
-		parsedChunk["problem_place"] = "question_number"
+		parsedChunk["problem_place"] = "1. question_number"
 		return parsedChunk
 	
+	
 
-	# Get [note]  (it can be empty)
+	# Get [note] (it can be empty)
 	regExpStr	= r"(<br><font .*color=\"red\">|<br><font .*color=\"red\"><b>|<br><b><font .*color=\"Red\">ВНИМАНИЕ!<\/font><\/b>\n|<b><font .*color=\"Red\">ВНИМАНИЕ!<\/font><\/b>\n)(.*)(\n.*)?(<\/b><\/a><\/font>\.|<\/b><\/a><\/font>|<\/b><\/b><\/a><br>\.|<\/b><\/b><\/a><br>|<\/b><\/font><\/h2>|<\/b><\/font><\/font><\/h2>)"
 	result		= re.findall(regExpStr, chunk, flags=re.IGNORECASE | re.MULTILINE)
 
 	if result and len(result) > 0:
-
-		notesfullResult	= ""
+		fullResultNotes	= ""
 		for item in result:
 			note	= "".join(item)
-			chunk		= chunk.replace(note, "") # remove part [note] from chunk
+			chunk	= chunk.replace(note, "") # remove part [note] from chunk
 
-			if notesfullResult == "":
-				notesfullResult	= note
+			if fullResultNotes == "":
+				fullResultNotes	= note
 			else:
-				notesfullResult	+= ";\n" + note
+				fullResultNotes	+= ";\n" + note
 		
-		notesfullResult = notesfullResult.strip()
-		parsedChunk["note"] = notesfullResult
+		fullResultNotes = fullResultNotes.strip()
+		parsedChunk["note"] = fullResultNotes
 	
 
-	# Get previous consultations (TODO)
-	"""
-Examples:
 
-<br>предыдущий <a href="http://hand-help.ru/doc2.7.html#vopr11481" class="link2"><b>11481</b></a>
+	# Get [previous] consultations (it can be empty)
+	regExpStr	= r"(<br>предыдущи(й|е) ?(вопросы?)? ?<a.*?><b>[ ]?№?[ ]?\d{1,5}<\/b><\/a>\n|<br><a.*?><b>предыдущи(й|е) ?<\/b><\/a>[ ]?№?[ ]?\d{1,5}\n|<br>предыдущи(й|е) ?(вопросы?)? ?<a.*?><b>№? ?\d{1,5}<\/b><\/a> ?\n|<br><a.*?><b>предыдущи(й|е) ?(вопросы?)? ?№?\d{1,5}<\/b><\/a>\.?\n|<br>предыдущи(й|е) ?(вопросы?)? ?(<b>)?№? ?\d{1,5}(, \d{1,5})*(<\/b>)?\.?\n|<br>предыдущи(й|е) ?\d{1,5} ?<a.*?>(.*?)</a>\n|<br>(<b>)?(<i>)?\(предыдущи(й|е):? ?№? ?\d{1,5}(.*?)\)(<\/i>)?<\/b>\n|<br><i>\(?предыдущи(й|е) ?\d{1,5} ?<a.*?>.*?<\/a>\)<\/i>\n?|<br><i>\(предыдущи(й|е) ?\d{1,5}\)<\/i>\n|<br><i>предыдущи(й|е) ?<a.*?><b>№? ?\d{1,5}<\/b><\/a><\/i>\n|<br>предыдущи(й|е) ?<a.*?><b>вопросы? ?№? ?\d{1,5}<\/b><\/a>\.?\n|<br>предыдущие ?(вопросы?|консультаци(я|и))? ?(№|№ №|№№)?:? ?.*?\.?\n| предыдущие вопросы <a.*?><\/a>(, <a.*?><\/a>)*\.| (мои)? ?предыдущие ?(вопросы)?№? \d{1,5} ?((,|и) ?(\d{1,5}|<a.*?>.*?<\/a>))*\.)"
+	result		= re.findall(regExpStr, chunk, flags=re.IGNORECASE | re.MULTILINE)
+	if result and len(result) > 0:
+		fullResultPrev			= result[0][0]
+		chunk					= chunk.replace(fullResultPrev, "") # remove part [previous] from chunk
+		fullResultPrev			= fullResultPrev.strip()
+		parsedChunk["previous"] = fullResultPrev
 
-<br><a href="http://www.hand-help.ru/doc2.1.13.html" class="link2"><b>Предыдущий</b></a> № 10899
-
-<br>предыдущий<a href="http://www.hand-help.ru/doc2.1.17.html" class="link2"><b>11076</b></a> 
-
-<br>предыдущий вопрос<a href="http://www.hand-help.ru/doc2.1.17.html" class="link2"><b>№11081</b></a>
-
-<br>предыдущий 11122
-
-<br>Предыдущий №10934
-
-<br><a href="http://www.hand-help.ru/doc2.1.7.html" class="link2"><b>Предыдущий вопрос №10979</b></a>.
-
-<br>предыдущий вопрос № 11005
-
-<br>предыдущий 11008, 11006
-
-<br>Предыдущий 10980 <a href="http://hand-help.ru/doc2.12.html" class="link2"><b>в международной защите</b></a>
-
-<br>предыдущий № 10901
-
-<br>предыдущий вопрос <b>№ 10891</b>
-
-<br>предыдущий вопрос<a href="http://www.hand-help.ru/doc2.1.1.html#vopr10858" class="link2"><b>№10858</b></a> 
-
-<br>Предыдущие вопросы №№:<a href="http://www.hand-help.ru/doc2.9.html#10620" class="link2"><b>№10620</b></a>, <a href="http://www.hand-help.ru/doc2.9.html#10649" class="link2"><b>№10649</b></a>, <a href="http://www.hand-help.ru/doc2.1.51.html#10657" class="link2"><b>№10657</b></a>.
-
-<br>предыдущий <a href="http://www.hand-help.ru/doc2.1.13.html#vopr10434" class="link2"><b>№ 10434</b></a>
-
-<br><b>(предыдущий: №10196)</b>
-
-<br><b>(предыдущий 10167 в рубрике «<a href="http://hand-help.ru/doc2.1.3.html" class="link2"><b>размеры</b></a>»)</b>
-
-<br><i>(предыдущий 10046 <a href="http://www.hand-help.ru/doc2.1.7.html" class="link2"><b>сбыт</b></a>)</i>
-
-<br><b><i>(Предыдущий:№9946)</i></b>
-
-<br><i>(предыдущий 9989)</i>
-
-<br>Предыдущий <a href="http://hand-help.ru/doc2.1.13.html#vopr664" class="link2"><b>вопрос № 664</b></a>.
-
-<br>Предыдущий <a href="http://hand-help.ru/doc15.html#vopr10852" class="link2"><b>10852</b></a> и <a href="http://hand-help.ru/doc2.1.13.html#vopr12875" class="link2"><b>12875</b></a>
-
-<br>предыдущий <a href="http://hand-help.ru/doc2.12.html#vopr7333" class="link2"><b>№ 7333</b></a>
-
-<br><i>предыдущий <a href="http://hand-help.ru/doc2.1.13.html#vopr7348" class="link2"><b>№ 7348</b></a></i>
-
-	"""
 
 
 	# Get [who_asks]
@@ -181,37 +141,34 @@ Examples:
 	result		= re.findall(regExpStr, chunk, flags=re.IGNORECASE)
 
 	if result and len(result) > 0 and len(result[0][2]) > 0:
-		fullResult = "".join(result[0])
-		result = result[0][2]
-		chunk = chunk.replace(fullResult, "") # remove part [who_asks] from chunk
+		fullResultWhoAsks	= "".join(result[0])
+		result				= result[0][2]
+		chunk				= chunk.replace(fullResultWhoAsks, "") # remove part [who_asks] from chunk
 
 		# remove last semicolon if exists
-		regExpStr = r"[:]$"
-		result = re.sub(regExpStr, "", result)
+		regExpStr	= r"[:]$"
+		result		= re.sub(regExpStr, "", result)
 
-		result = result.strip()
+		result		= result.strip()
 		parsedChunk["who_asks"] = result
 	else:
 		parsedChunk["raw_text_rest"] = chunk
-		parsedChunk["problem_place"] = "who_asks"
+		parsedChunk["problem_place"] = "2. who_asks"
 		return parsedChunk
 
 
 	# Get [tags] (it can be empty)
 	# https://stackoverflow.com/questions/11592033/regex-match-text-between-tags
-	# <br><i>(<a href="http://www.hand-help.ru/doc2.6.html" class="link2"><b>иное</b></a>)</i>
 	regExpStr	= r"\n(<br><i>\()(.*)(\)<\/i>)\n"
 	result		= re.findall(regExpStr, chunk, flags=re.IGNORECASE | re.MULTILINE)
 
 	if result and len(result) > 0 and len(result[0][1]) > 0:
-		fullResult = "".join(result[0])
-		result = result[0][1]
-		chunk = chunk.replace(fullResult, "") # remove part [tags] from chunk
-
-		# result	= general_stuff.removeHtmlTags(result)
+		fullResultTags	= "".join(result[0])
+		result			= result[0][1]
+		chunk			= chunk.replace(fullResultTags, "") # remove part [tags] from chunk
 
 		if result and len(result) > 0:
-			result = result.strip()
+			result	= result.strip()
 			# Remove last ")" if exists
 			if result[0] == '(':
 				result	= result[1:]
@@ -226,77 +183,69 @@ Examples:
   
 
 	# Get [who_answers]
-	whoAnswers	= ""
-	regExpStr	= r"(<p><b>|<b><p>|<p>|<b>|<p><br>|<P><b><a.*>|<br>|<br><\/b>|<br><b>|<<br>b>|<br><b\.|<br><br>БиЮ|<br><br><b>)( )?(Отвечает |Отаечает |Ответ |Ответ:|Пишет |Отвеачет |твечает |Отвечаете |Отвечает |Отвеачает |Отвевает |Отвечает<a.*><b> |Отвечают )(.*?)(:<\/b>|<\/b>|:)"
-	result		= re.findall(regExpStr, chunk, flags=re.IGNORECASE)
+	fullResultWhoAnswers	= ""
+	regExpStr				= r"(<p><b>|<b><p>|<p>|<b>|<p><br>|<P><b><a.*>|<br>|<br><\/b>|<br><b>|<<br>b>|<br><b\.|<br><br>БиЮ|<br><br><b>)( )?(Отвечает |Отаечает |Ответ |Ответ:|Пишет |Отвеачет |твечает |Отвечаете |Отвечает |Отвеачает |Отвевает |Отвечает<a.*><b> |Отвечают )(.*?)(:<\/b>|<\/b>|:)"
+	result					= re.findall(regExpStr, chunk, flags=re.IGNORECASE)
 
 	if result and len(result) > 0 and len(result[0][3]) is not None:
-		whoAnswers = "".join(result[0])
-		result = result[0][3]
+		fullResultWhoAnswers	= "".join(result[0])
+		result					= result[0][3]
 		
 		# remove last semicolon if exists
-		regExpStr = r"[:]$"
-		result = re.sub(regExpStr, "", result)
+		regExpStr	= r"[:]$"
+		result		= re.sub(regExpStr, "", result)
 
-		result = result.strip()
+		result		= result.strip()
 		parsedChunk["who_answers"] = result
 	else:
 		parsedChunk["raw_text_rest"] = chunk
-		parsedChunk["problem_place"] = "who_answers"
+		parsedChunk["problem_place"] = "3. who_answers"
 		return parsedChunk
 
 	
 	# Get [question]
-	result = chunk.split(whoAnswers)
+	result	= chunk.split(fullResultWhoAnswers)
 
 	if result and len(result) > 0:
-		result = result[0]
-		chunk = chunk.replace(result, "") # remove part [question] from chunk
-		chunk = chunk.replace(whoAnswers, "") # remove part [who_answers] from chunk
+		fullResultQuestion	= result[0]
+		chunk	= chunk.replace(fullResultQuestion, "") # remove part [question] from chunk
+		chunk	= chunk.replace(fullResultWhoAnswers, "") # remove part [who_answers] from chunk
 
-		# Replace <br> on new line
-		# https://stackoverflow.com/questions/5959415/jquery-javascript-regex-replace-br-with-n
-		# regExpStr = r"<br\s*[\/]?>"
-		# result = re.sub(regExpStr, os.linesep, result)
+		fullResultQuestion		= fullResultQuestion.strip()
+		parsedChunk["question"] = fullResultQuestion
 
-		# result	= general_stuff.removeHtmlTags(result)
-
-		result = result.strip()
-		parsedChunk["question"] = result
+		fullResultQuestionFixed			= general_stuff.removeHtmlTags(fullResultQuestion, r"(<b>|<\/b>)", re.IGNORECASE | re.MULTILINE)
+		parsedChunk["question_edited"]	= fullResultQuestionFixed
 	else:
 		parsedChunk["raw_text_rest"] = chunk
-		parsedChunk["problem_place"] = "question"
+		parsedChunk["problem_place"] = "4. question"
 		return parsedChunk
 
 
 	# Get [answer_date]
 	# Get last line with date
-	answerDate	= ""
+	fullResultAnswerDate	= ""
 	regExpStr	= r"(<br>|<br>\n|\n</ol>|</ol>\n|</ul>\n|\n)(\d{1,2}[/.-]\d{2}[/.-]\d{2,4})(\n|\.)?(<\/font><\/h2>|<font><\/h2>|<\/font>|<\/h2>|\.|</b></font>)"
 	result		= re.findall(regExpStr, chunk, flags=re.IGNORECASE | re.MULTILINE)
 
 	if result and len(result) > 0 and len(result[-1][1]) > 0:
 		parsedChunk["answer_date"]	= result[-1][1]
-		answerDate					= "".join(result[-1])
-		chunk						= chunk.replace(answerDate, "") # remove part [answer_date] from chunk
+		fullResultAnswerDate		= "".join(result[-1])
+		chunk						= chunk.replace(fullResultAnswerDate, "") # remove part [answer_date] from chunk
 	else:
 		parsedChunk["raw_text_rest"] = chunk
-		parsedChunk["problem_place"] = "answer_date"
+		parsedChunk["problem_place"] = "5. answer_date"
 		return parsedChunk
 
 
 	# Get [answer]
+	fullResultAnswer		= chunk
+	fullResultAnswer		= fullResultAnswer.strip()
+	parsedChunk["answer"]	= fullResultAnswer
 
-	# Replace <br> on new line
-	# https://stackoverflow.com/questions/5959415/jquery-javascript-regex-replace-br-with-n
-	# regExpStr = r"<br\s*[\/]?>"
-	# result = re.sub(regExpStr, os.linesep, chunk)
-
-	result		= chunk
-	# result		= general_stuff.removeHtmlTags(chunk)
-	result		= result.strip()
-	parsedChunk["answer"] = result
-
+	fullResultAnswerFixed			= general_stuff.removeHtmlTags(fullResultAnswer, r"(<b>|<\/b>)", re.IGNORECASE | re.MULTILINE)
+	parsedChunk["answer_edited"]	= fullResultAnswerFixed
+	
 
 	parsedChunk["is_done"] = True    
 	return parsedChunk

@@ -49,6 +49,16 @@ select count(*) from consultations;
 
 
 /*
+ *	Find doubles 
+ */
+select c_number, count(*)
+FROM consultations
+GROUP BY c_number
+HAVING count(*) > 1
+order by c_number;
+
+
+/*
  *	Get missing numbers in sequence
  */
 select
@@ -74,20 +84,19 @@ where 1=1
  * Show incorrect parsed consults
  */
 select
-	consults.id 
-	,consults.c_number						c_number
+	raw_cons.problem_place					problem_place
+	,consults.c_number						c_num
+	,raw_cons.txt							raw_con_txt
+	,raw_cons.txt_rest						raw_con_txt_rest
+	,consults.id
 	,to_char(consults.c_date, 'DD.MM.YYYY')	c_date
 	,ask_persons.name						who_asks
 	,questions.txt							question
 	,consultants.name						consultant
 	,answers.txt							answer
 	,con_tags_l.tags_concat					tags
-	,consults.c_note						notes
-	,raw_cons.is_done						raw_con_is_done
-	,raw_cons.problem_place					problem_place
-	,raw_cons.txt							raw_con_txt
---	,raw_cons.txt_rest						raw_con_txt_rest
---	,raw_cons.processed_date				raw_con_proc_date
+	,consults.c_note						note
+	,consults.c_previous					prev
 from
 	consultations		consults
 	,raw_consultations	raw_cons
@@ -116,6 +125,7 @@ where	1 = 1
 	and raw_cons.is_done 	= 0
 order by
 	problem_place
+	,c_num
 ;
 
 
@@ -129,13 +139,17 @@ select
 	,to_char(consults.c_date, 'DD.MM.YYYY')	c_date
 	,ask_persons.name						who_asks
 	,questions.txt							question
+	,questions.txt_edited					question_e
 	,consultants.name						consultant
 	,answers.txt							answer
+	,answers.txt_edited						answer_e
 	,con_tags_l.tags_concat					tags
 	,consults.c_note						notes
+	,consults.c_previous					prev
 	,raw_cons.is_done						raw_con_is_done
 	,raw_cons.problem_place					problem_place
 	,raw_cons.txt							raw_con_txt
+	,raw_cons.processed_date				raw_con_proc_date
 from
 	consultations		consults
 	,raw_consultations	raw_cons
