@@ -24,10 +24,8 @@
 
 
 [TODO]
-
-	- Add parts of chunk w/ all html tags? Or dont erase it
-	- Check on empty values (question, answer) for consultations that marked as correct
-	- Add crossplatform new line https://stackoverflow.com/a/42972971
+	- Пересмотреть все результаты регулярок, аккуратно убирая их результаты из чанка.
+	
 
 
 [Progress]

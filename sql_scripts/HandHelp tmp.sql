@@ -87,7 +87,7 @@ select
 	raw_cons.problem_place					problem_place
 	,consults.c_number						c_num
 	,raw_cons.txt							raw_con_txt
-	,raw_cons.txt_rest						raw_con_txt_rest
+--	,raw_cons.txt_rest						raw_con_txt_rest
 	,consults.id
 	,to_char(consults.c_date, 'DD.MM.YYYY')	c_date
 	,ask_persons.name						who_asks

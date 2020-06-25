@@ -24,8 +24,9 @@ def main():
 	# TODO: Read all files from folder
 
 	fileName = "test-1-chunk.html"
+	fileName = "test-1-chunk-template.html"
 
-	# fileName = "1. doc 1-1000.html"
+	fileName = "1. doc 1-1000.html"
 	# fileName = "2. doc 1001-2000.html"
 	# fileName = "3. doc 2001-3000.html"
 	# fileName = "4. doc 3001-4000.html"
