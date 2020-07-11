@@ -26,10 +26,6 @@ def linesLstToChunksLst(linesLst):
 	# Find tag <hr><h2> in line.
 	# Split line with finded separator to find out if line consists part of previous chunk
 	regExpStr = r"(.*)(<hr\s*\/?><h2\s*\/?>)(.*)" # Captured 3 groups
-	# regExpStr = r"(?:.*)(?:<hr\s*\/?><h2\s*\/?>)(?:.*)" # Non-captured groups
-	
-	# regExp = re.compile(regExpStr)
-	# isMatch = regExp.match(line)
 
 	for line in linesLst:
 		
@@ -83,8 +79,10 @@ def parseChunk(chunk):
 	}
 
 
+	rmHtmlTagsRegExpStr				= r"(^<\/div>(<\/font>)* *\t*(<p>)*(\n|\\n|\r\n|\\r\\n|\n\r|\\n\\r)*(\t|\\t)*(<p>)*-?((\n|\\n|\r\n|\\r\\n|\n\r|\\n\\r)*(\t|\\t)*-?<br>)*|^<br>|^<\/br>|^<font.*?><br>|^<font.*?>(\n|\\n|\r\n|\\r\\n|\n\r|\\n\\r)*(\t|\\t)*<br>|<br>$|<\/br>$|<font.*?>|<\/font><\/h2>|<\/font>|<b>|<\/b>)"
+
 	# Replace HTML entities
-	chunk	= html.unescape(chunk)
+	chunk		= chunk.replace("&nbsp;", "")
 
 
 	# Get [question_number]
@@ -115,51 +113,72 @@ def parseChunk(chunk):
 	
 
 	# Get [note] (it can be empty)
-	regExpStr	= r"((<br><font .*color=\"red\">|<br><font .*color=\"red\"><b>|<br><b><font .*color=\"Red\">ВНИМАНИЕ!<\/font><\/b>(\n|\\n)|<b><font .*color=\"Red\">ВНИМАНИЕ!<\/font><\/b>(\n|\\n))(.*)((\n|\\n).*)?(<\/b><\/a><\/font>\.|<\/b><\/a><\/font>|<\/b><\/b><\/a><br>\.|<\/b><\/b><\/a><br>|<\/b><\/font><\/h2>|<\/b><\/font><\/font><\/h2>))"
+	regExpStr	= r"((<br><font .*color=\"red\">|<br><font .*color=\"red\"><b>|<br><b><font .*color=\"Red\">ВНИМАНИЕ!<\/font><\/b>(\n|\\n)|<b><font .*color=\"Red\">ВНИМАНИЕ!<\/font><\/b>(\n|\\n)|<font color=\"red\"><b>)(.*)((\n|\\n).*)?(<\/b><\/a><\/font>\.|<\/b><\/a><\/font>|<\/b><\/b><\/a><br>\.|<\/b><\/b><\/a><br>|<\/b><\/font><\/h2>|<\/b><\/font><\/font><\/h2>|<\/font><a.*?>.*?<\/a>(<p>)?))"
 	result		= re.findall(regExpStr, chunk, flags=re.IGNORECASE | re.MULTILINE)
 
 	if result and len(result) > 0:
 		fullResultNotes	= ""
 		for item in result:
 			note	= item[0]
-			chunk	= chunk.replace(note, "") # remove part [note] from chunk
+			chunk	= chunk.replace(note, os.linesep) # remove part [note] from chunk
 
 			if fullResultNotes == "":
 				fullResultNotes	= note
 			else:
-				fullResultNotes	+= ";\n" + note
+				fullResultNotes	+= ";" + os.linesep + note
 		
 		fullResultNotes = fullResultNotes.strip()
 		parsedChunk["note"] = fullResultNotes
 	
 
 
-	# Get [previous] consultations (it can be empty)
-	regExpStr	= r"(<br>предыдущи(й|е) ?(вопросы?)? ?<a.*?><b> ?№? ?\d{1,5}<\/b><\/a>(\n|\\n)|<br><a.*?><b>предыдущи(й|е) ?<\/b><\/a> ?№? ?\d{1,5}(\n|\\n)|<br>предыдущи(й|е) ?(вопросы?)? ?<a.*?><b>№? ?\d{1,5}<\/b><\/a> ?(\n|\\n)|<br><a.*?><b>предыдущи(й|е) ?(вопросы?)? ?№?\d{1,5}<\/b><\/a>\.?(\n|\\n)|<br>предыдущи(й|е) ?(вопросы?)? ?(<b>)?№? ?\d{1,5}(, \d{1,5})*(<\/b>)?\.?(\n|\\n)|<br>предыдущи(й|е) ?\d{1,5} ?<a.*?>(.*?)</a>(\n|\\n)|<br>(<b>)?(<i>)?\(предыдущи(й|е):? ?№? ?\d{1,5}(.*?)\)(<\/i>)?<\/b>(\n|\\n)|<br><i>\(?предыдущи(й|е) ?\d{1,5} ?<a.*?>.*?<\/a>\)<\/i>(\n|\\n)?|<br><i>\(предыдущи(й|е) ?\d{1,5}\)<\/i>(\n|\\n)|<br><i>предыдущи(й|е) ?<a.*?><b>№? ?\d{1,5}<\/b><\/a><\/i>(\n|\\n)|<br>предыдущи(й|е) ?<a.*?><b>вопросы? ?№? ?\d{1,5}<\/b><\/a>\.?(\n|\\n)|<br>предыдущие ?(вопросы?|консультаци(я|и))? ?(№|№ №|№№)?:? ?.*?\.?(\n|\\n)| предыдущие вопросы <a.*?><\/a>(, <a.*?><\/a>)*\.| (мои)? ?предыдущие ?(вопросы)?№? \d{1,5} ?((,|и) ?(\d{1,5}|<a.*?>.*?<\/a>))*\.)"
-	result		= re.findall(regExpStr, chunk, flags=re.IGNORECASE | re.MULTILINE)
+	# Get [previous] questions numbers and links (it can be empty)
+	regExpStr		= r"(<br>пред(ыдущи(й|е))? ?(вопросы?)? ?<a.*?><b> ?(№|вопрос)? ?\d{1,5}<\/b><\/a>\.? *(\n|\\n)|<br><a.*?><b>предыдущи(й|е) ?<\/b><\/a> ?№? ?\d{1,5}(\n|\\n)|<br>предыдущи(й|е) ?(вопросы?)? ?<a.*?><b>№? ?\d{1,5}<\/b><\/a> ?(\n|\\n)|<br><a.*?><b>предыдущи(й|е) ?(вопросы?)? ?№?\d{1,5}<\/b><\/a>(\.(\n|\\n)|\.|(\n|\\n))|<br>предыдущи(й|е) ?(вопросы?)? ?(<b>)?№? ?\d{1,5}(, \d{1,5})*(<\/b>)?\.?(\n|\\n)|<br>предыдущи(й|е) ?\d{1,5} ?<a.*?>(.*?)</a>(\n|\\n)|<br>(<b>)?(<i>)?\(предыдущи(й|е):? ?№? ?\d{1,5}(.*?)\)(<\/i>)?<\/b>(\n|\\n)|<br><i>\(?предыдущи(й|е) ?\d{1,5} ?<a.*?>.*?<\/a>\)<\/i>(\n|\\n)?|<br><i>\(предыдущи(й|е) ?\d{1,5}\)<\/i>(\n|\\n)|<br><i>предыдущи(й|е) ?<a.*?><b>№? ?\d{1,5}<\/b><\/a><\/i>(\n|\\n)|<br>предыдущи(й|е) ?<a.*?><b>вопросы? ?№? ?\d{1,5}<\/b><\/a>\.?(\n|\\n)|<br>предыдущие ?(вопросы?|консультаци(я|и))? ?(№|№ №|№№)?:? ?.*?\.?(\n|\\n)| предыдущие вопросы <a.*?><\/a>(, <a.*?><\/a>)*\.| (мои)? ?предыдущие ?(вопросы)?№? \d{1,5} ?((,|и) ?(\d{1,5}|<a.*?>.*?<\/a>))*\.|<br><a.*?><b>.*?вопрос.*?<\/b><\/a>.*?дополнение.*?(\.(\n|\\n)|(\n|\\n)))"
+	result			= re.findall(regExpStr, chunk, flags=re.IGNORECASE | re.MULTILINE)
+	fullResultPrev	= ""
+
 	if result and len(result) > 0:
 		fullResultPrev			= result[0][0]
-		chunk					= chunk.replace(fullResultPrev, "") # remove part [previous] from chunk
+		chunk					= chunk.replace(fullResultPrev, os.linesep) # remove part [previous] from chunk
 		fullResultPrev			= fullResultPrev.strip()
 		parsedChunk["previous"] = fullResultPrev
 
 
 
 	# Get [who_asks]
-	regExpStr	= r"(<b>|<b><p>|<pb>|<br>)(Вопрос |Спрашивают |Спрашивает |Cпрашивает |Спрашиваете |Пишет |Обращается |Спрашиваешь |Пишут |Дополняет |Пишете |Пишет, |Сапрашивает |Спрашивает|Спраивает |Спрашиваю |Спрашиваеь |Спрашиват | Спрашивает |Спращивает |Скрашивает |Спрашиваеьт |Српрашивает |Спрашвиает |Спрашиванет |CСпрашивает |Спрашивае |Спрашивет |Спрашишвает |Спрашвает |Cпрашиваетт |Спрашивали |Спрашшивает )(.*?)(<\/b>|!<\/b>|<br>|\.:<\/b>|\.<\/b>|\.:|\.)"
+	regExpStr	= r"((<b><p>|<pb>|<br>|<\/br>|<b>|<\/b>) ?(Вопрос|Спрашивают|Спрашивает|Cпрашивает|Спрашиваете|Пишет|Обращается|Спрашиваешь|Пишут|Дополняет|Пишете|Пишет,|Сапрашивает|Спрашивает|Спраивает|Спрашиваю|Спрашиваеь|Спрашиват|Спрашивает|Спращивает|Скрашивает|Спрашиваеьт|Српрашивает|Спрашвиает|Спрашиванет|CСпрашивает|Спрашивае|Спрашивет|Спрашишвает|Спрашвает|Cпрашиваетт|Спрашивали|Спрашшивает|Спаршивает) ?(.*?)(:<\/b><\/p>|:<\/p><\/b>|:<\/b>|<\/b><\/p>|<\/p><\/b>|<\/b>|<b>|<\/p>|<p>)?(\n|\\n))"
 	result		= re.findall(regExpStr, chunk, flags=re.IGNORECASE)
 
-	if result and len(result) > 0 and len(result[0][2]) > 0:
-		fullResultWhoAsks	= "".join(result[0])
-		result				= result[0][2]
-		chunk				= chunk.replace(fullResultWhoAsks, "") # remove part [who_asks] from chunk
+	if result and len(result) > 0 and len(result[0][3]) > 0:
+		fullResultWhoAsks	= result[0][0]
+		who_asks			= result[0][3]
+		chunk				= chunk.replace(fullResultWhoAsks, os.linesep) # remove part [who_asks] from chunk
 
-		# remove last semicolon if exists
-		regExpStr	= r"[:]$"
-		result		= re.sub(regExpStr, "", result)
+		# Try to find [previous] questions numbers and links in [who_asks] (it can be empty)
+		regExpStr	= r"((\(.*?<a.*?>.*?<\/a>((,|…) ?<a.*?>.*?<\/a>)*\)|<a.*?>.*?<\/a>((,|…) ?<a.*?>.*?<\/a>)*)\.?)"
+		result		= re.findall(regExpStr, who_asks, flags=re.IGNORECASE)
 
-		result		= result.strip()
-		parsedChunk["who_asks"] = result
+		if result and len(result) > 0:
+			if fullResultPrev == "":
+				fullResultPrev	= result[0][0]
+			else:
+				fullResultPrev	+= ";\n" + result[0][0]
+			parsedChunk["previous"] = fullResultPrev
+
+			# replace part [previous] in [who_asks]
+			who_asks	= who_asks.replace(result[0][0], "")
+
+		
+		# Remove some html tags, strip, remove last semicolon if exists and after strip again
+		who_asks				= general_stuff.removeHtmlTags(who_asks, rmHtmlTagsRegExpStr, re.IGNORECASE)
+		who_asks				= who_asks.strip()
+
+		regExpStr				= r":$"
+		who_asks				= re.sub(regExpStr, "", who_asks)
+
+		who_asks				= who_asks.strip()
+		
+		parsedChunk["who_asks"]	= who_asks
 	else:
 		parsedChunk["raw_text_rest"] = chunk
 		parsedChunk["problem_place"] = "2. who_asks"
@@ -174,7 +193,7 @@ def parseChunk(chunk):
 	if result and len(result) > 0 and len(result[0][2]) > 0:
 		fullResultTags	= "".join(result[0])
 		result			= result[0][2]
-		chunk			= chunk.replace(fullResultTags, "") # remove part [tags] from chunk
+		chunk			= chunk.replace(fullResultTags, os.linesep) # remove part [tags] from chunk
 
 		if result and len(result) > 0:
 			result	= result.strip()
@@ -193,19 +212,19 @@ def parseChunk(chunk):
 
 	# Get [who_answers]
 	fullResultWhoAnswers	= ""
-	regExpStr				= r"(<p><b>|<b><p>|<p>|<b>|<p><br>|<P><b><a.*>|<br>|<br><\/b>|<br><b>|<<br>b>|<br><b\.|<br><br>БиЮ|<br><br><b>)( )?(Отвечает |Отаечает |Ответ |Ответ:|Пишет |Отвеачет |твечает |Отвечаете |Отвечает |Отвеачает |Отвевает |Отвечает<a.*><b> |Отвечают )(.*?)( :<\/b>|: <\/b>|:<\/b>| <\/b>|<\/b>| :|:)"
+	regExpStr				= r"((\n|\\n) *(<center>)?(<p><b>|<b><p>|<p>|<b>|<p><br>|<p><b><a.*>|<a.*><p><b>|<p><a.*><b>|<p><a.*<b>|<br>|<br><\/b>|<br><b>|<<br>b>|<br><b\.|<br><br>БиЮ|<br><br><b>) ?(Отвечает |Отаечает |Ответ |Ответ:|Пишет |Отвеачет |твечает |Отвечаете |Отвечает |Отвеачает |Отвевает |Отвечает<a.*><b> |Отвечают )(.*?)( :<\/b>|: <\/b>|:<\/b>| <\/b>|<\/b>|<\/b><\/a>| :|:)(<\/center>)? *(\(ответ изменен\))?(\n|\\n|<br>))"
 	result					= re.findall(regExpStr, chunk, flags=re.IGNORECASE)
 
-	if result and len(result) > 0 and len(result[0][3]) is not None:
-		fullResultWhoAnswers	= "".join(result[0])
-		result					= result[0][3]
+	if result and len(result) > 0 and ( len(result[0][5]) > 0 or result[0][5] == '' ):
+		fullResultWhoAnswers	= result[0][0]
+		result					= result[0][5]
 		
 		# remove last semicolon if exists
-		regExpStr	= r"[:]$"
+		regExpStr	= r":$"
 		result		= re.sub(regExpStr, "", result)
 
-		result		= result.strip()
-		parsedChunk["who_answers"] = result
+		result						= result.strip()
+		parsedChunk["who_answers"]	= result
 	else:
 		parsedChunk["raw_text_rest"] = chunk
 		parsedChunk["problem_place"] = "3. who_answers"
@@ -223,8 +242,7 @@ def parseChunk(chunk):
 		fullResultQuestion		= fullResultQuestion.strip()
 		parsedChunk["question"] = fullResultQuestion
 
-		regExpStr						= r"(^<\/div>(<\/font>)*<p>(\n|\\n)*(<p>)*-?((\n|\\n)*-?<br>)*|^<br>|^<\/br>|^<font.*?><br>|^<font.*?>(\n|\\n)<br>|<br>$|<\/br>$|<font.*?>|<\/font>|<b>|<\/b>)"
-		fullResultQuestionFixed			= general_stuff.removeHtmlTags(fullResultQuestion, regExpStr, re.IGNORECASE)
+		fullResultQuestionFixed			= general_stuff.removeHtmlTags(fullResultQuestion, rmHtmlTagsRegExpStr, re.IGNORECASE)
 		fullResultQuestionFixed			= fullResultQuestionFixed.strip()
 		parsedChunk["question_edited"]	= fullResultQuestionFixed
 	else:
@@ -254,8 +272,8 @@ def parseChunk(chunk):
 	fullResultAnswer		= fullResultAnswer.strip()
 	parsedChunk["answer"]	= fullResultAnswer
 
-	regExpStr						= r"(^<\/div>(<\/font>)*<p>(\n|\\n)*(<p>)*-?((\n|\\n)*-?<br>)*|^<br>|^<\/br>|^<font.*?><br>|^<font.*?>(\n|\\n)<br>|<br>$|<\/br>$|<font.*?>|<\/font>|<b>|<\/b>)"
-	fullResultAnswerFixed			= general_stuff.removeHtmlTags(fullResultAnswer, regExpStr, re.IGNORECASE)
+	regExpStr						= r"(^<\/div>(<\/font>)* ?(<p>)*(\n|\\n)*(<p>)*-?((\n|\\n)*-?<br>)*|^<br>|^<\/br>|^<font.*?><br>|^<font.*?>(\n|\\n)<br>|<br>$|<\/br>$|<font.*?>|<\/font><\/h2>|<\/font>|<b>|<\/b>)"
+	fullResultAnswerFixed			= general_stuff.removeHtmlTags(fullResultAnswer, rmHtmlTagsRegExpStr, re.IGNORECASE)
 	fullResultAnswerFixed			= fullResultAnswerFixed.strip()
 	parsedChunk["answer_edited"]	= fullResultAnswerFixed
 	

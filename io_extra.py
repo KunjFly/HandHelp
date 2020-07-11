@@ -5,6 +5,7 @@ from pathlib import Path
 import os
 import json
 from datetime import datetime
+from copy import copy
 from send2trash import send2trash # Dependencies: pip install Send2Trash
 import shutil
 
@@ -114,7 +115,8 @@ def readFileAsStr(fileName):
 
 def readFileAsLinesLst(fileName, encoding="utf-8", errors="replace"):
 	""""""
-	fileToBeRead = getPathToInputFile(fileName, consts.INPUT_FOLDER_LST)
+	inputFolder		= copy(consts.INPUT_FOLDER_LST)
+	fileToBeRead	= getPathToInputFile(fileName, inputFolder)
 	try:
 		with open(fileToBeRead, "r", encoding=encoding, errors=errors) as file:
 			return file.readlines()

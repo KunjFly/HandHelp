@@ -15,34 +15,48 @@ def main():
 	logger.info("==================================================")
 	logger.info("[Start script]")
 
+	# """ 
+	#	Clear output folder
+	#  """
+	# io_extra.deleteContentOfFolder(consts.OUTPUT_FOLDER_LST)
+
+
 	""" 
-	clear output and read input
+		Read input (any files)
 	 """
-	io_extra.deleteContentOfFolder(consts.OUTPUT_FOLDER_LST)
 
-
-	# TODO: Read all files from folder
-
-	fileName = "test-1-chunk.html"
-	fileName = "test-1-chunk-template.html"
-
-	fileName = "1. doc 1-1000.html"
-	# fileName = "2. doc 1001-2000.html"
-	# fileName = "3. doc 2001-3000.html"
-	# fileName = "4. doc 3001-4000.html"
-	# fileName = "5. doc 4001-5000.html"
-	# fileName = "6. doc 5001-6000.html"
-	# fileName = "7. doc 6001-7000.html"
-	# fileName = "8. doc 7001-8000.html"
-	# fileName = "9. doc 8001-9000.html"
-	# fileName = "10. doc 9001-10000.html"
-	# fileName = "11. doc 10001-11000.html"
-	# fileName = "12. doc 11001-12000.html"
-	# fileName = "13. doc 12001-13000.html"
-	# fileName = "14. doc 13001-13520.html"
+	fileNames	= [
+		""
+		# ,"test-1-chunk.html"
+		# ,"test-many-chunks.html"
+		# ,"test-full-template.html"
+		,""
+		,"1. doc 1-1000.html"
+		,"2. doc 1001-2000.html"
+		,"3. doc 2001-3000.html"
+		,"4. doc 3001-4000.html"
+		,"5. doc 4001-5000.html"
+		,"6. doc 5001-6000.html"
+		,"7. doc 6001-7000.html"
+		,"8. doc 7001-8000.html"
+		,"9. doc 8001-9000.html"
+		,"10. doc 9001-10000.html"
+		,"11. doc 10001-11000.html"
+		,"12. doc 11001-12000.html"
+		,"13. doc 12001-13000.html"
+		,"14. doc 13001-13520.html"
+	]
 	
-	linesLst = io_extra.readFileAsLinesLst(fileName, encoding="Windows-1251")
-	
+	linesLst	= []
+	for fileName in fileNames:
+		
+		if not fileName:
+			continue
+		result	= io_extra.readFileAsLinesLst(fileName, encoding="Windows-1251")
+		if result is not None:
+			logger.info(f"File {fileName} is loaded.")
+			linesLst.extend(result)
+			
 	
 	""" 
 	Get chunks
@@ -52,7 +66,7 @@ def main():
 		logger.warning("chunksLst is empty!")
 		return
 	
-	logger.info(f"File {fileName} is loaded.")
+	
 	
 	
 	""" 
@@ -68,47 +82,44 @@ def main():
 	""" 
 	Write chunks to files
 	 """
-	# io_extra.writeObjsToFilesWithTSname(chunksLst, filePath=consts.OUTPUT_FOLDER_LST)
-	successParsedChunks = list()
-	problemParsedChunks = list()
-	for parsedChunk in parsedChunksLst:
-		if not parsedChunk["raw_text_rest"]:
+	# # io_extra.writeObjsToFilesWithTSname(chunksLst, filePath=consts.OUTPUT_FOLDER_LST)
+	# successParsedChunks = list()
+	# problemParsedChunks = list()
+	# for parsedChunk in parsedChunksLst:
+	# 	if not parsedChunk["raw_text_rest"]:
+	# 		""""""
+	# 		# """
+	# 		# # There is no need to save Success parsed chunks
+	# 		# """
 
-			# del parsedChunk["raw_text_rest"]
-			"""
-			# There is no need to save Success parsed chunks
-			"""
-
-			"""
-			name           = "SUCCESS_" + parsedChunk["question_number"]
+	# 		# name           = "SUCCESS_" + parsedChunk["question_number"]
 			
-			itemToBeWrited = {
-				"content"       : parsedChunk
-				,"name"         : name
-				,"path"         : consts.OUTPUT_FOLDER_LST
-				,"timestamp"    : False
-			}
-			successParsedChunks.append(itemToBeWrited)
-			"""
-
-		else:
-			name    = "FAIL"
-			isTS    = True
+	# 		# itemToBeWrited = {
+	# 		# 	"content"       : parsedChunk
+	# 		# 	,"name"         : name
+	# 		# 	,"path"         : consts.OUTPUT_FOLDER_LST
+	# 		# 	,"timestamp"    : False
+	# 		# }
+	# 		# successParsedChunks.append(itemToBeWrited)
 			
-			if parsedChunk["question_number"]:
-				name        = "FAIL_" + parsedChunk["question_number"]
-				isTS        = False
+	# 	else:
+	# 		name    = "FAIL"
+	# 		isTS    = True
 			
-			itemToBeWrited = {
-				"content"       : parsedChunk
-				,"name"         : name
-				,"path"         : consts.OUTPUT_FOLDER_LST
-				,"timestamp"    : isTS
-			}
-			problemParsedChunks.append(itemToBeWrited)
+	# 		if parsedChunk["question_number"]:
+	# 			name        = "FAIL_" + parsedChunk["question_number"]
+	# 			isTS        = False
+			
+	# 		itemToBeWrited = {
+	# 			"content"       : parsedChunk
+	# 			,"name"         : name
+	# 			,"path"         : consts.OUTPUT_FOLDER_LST
+	# 			,"timestamp"    : isTS
+	# 		}
+	# 		problemParsedChunks.append(itemToBeWrited)
 
-	io_extra.writeObjsToFiles(successParsedChunks)
-	io_extra.writeObjsToFiles(problemParsedChunks)
+	# io_extra.writeObjsToFiles(successParsedChunks)
+	# io_extra.writeObjsToFiles(problemParsedChunks)
 
 	
 	""" 
@@ -117,11 +128,11 @@ def main():
 	for chunk in parsedChunksLst:
 		
 		
-		# if not chunk["raw_text_rest"]:
-		# 	"""
-		# 	# There is no need to save Success parsed chunks
-		# 	"""
-		# 	continue
+		if not chunk["raw_text_rest"]:
+			"""
+			# There is no need to save Success parsed chunks
+			"""
+			continue
 		
 		
 		# [raw_consultations], [consultations]

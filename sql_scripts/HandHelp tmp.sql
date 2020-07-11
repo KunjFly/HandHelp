@@ -51,11 +51,34 @@ select count(*) from consultations;
 /*
  *	Find doubles 
  */
-select c_number, count(*)
+select
+	''
+	,c_number
+	,count(*)
 FROM consultations
 GROUP BY c_number
 HAVING count(*) > 1
-order by c_number;
+order by c_number::int;
+
+
+/*
+ *	Find doubles in one row
+ */
+select
+	string_agg(cc.c_number, '; ') as tags_concat
+from (
+	select
+		c_number
+		,count(*) cnt
+	FROM consultations
+	GROUP BY c_number
+	HAVING count(*) > 1
+	order by c_number::int
+)	cc
+where 1=1
+	and cc.cnt = 2
+;
+
 
 
 /*
@@ -123,6 +146,9 @@ where	1 = 1
 	and consults.id			= questions.id_consultation
 	and consults.id			= ask_persons.id_consultation
 	and raw_cons.is_done 	= 0
+--	and problem_place not in (
+--		'3. who_answers'
+--	)
 order by
 	problem_place
 	,c_num
