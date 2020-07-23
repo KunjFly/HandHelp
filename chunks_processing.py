@@ -82,7 +82,7 @@ def parseChunk(chunk):
 	rmHtmlTagsRegExpStr				= r"(^<\/div>(<\/font>)* *\t*(<p>)*(\n|\\n|\r\n|\\r\\n|\n\r|\\n\\r)*(\t|\\t)*(<p>)*-?((\n|\\n|\r\n|\\r\\n|\n\r|\\n\\r)*(\t|\\t)*-?<br>)*|^<br>|^<\/br>|^<font.*?><br>|^<font.*?>(\n|\\n|\r\n|\\r\\n|\n\r|\\n\\r)*(\t|\\t)*<br>|<br>$|<\/br>$|<font.*?>|<\/font><\/h2>|<\/font>|<b>|<\/b>)"
 
 	# Replace HTML entities
-	chunk		= chunk.replace("&nbsp;", "")
+	chunk		= chunk.replace("&nbsp;", " ")
 
 
 	# Get [question_number]
@@ -172,12 +172,11 @@ def parseChunk(chunk):
 		# Remove some html tags, strip, remove last semicolon if exists and after strip again
 		who_asks				= general_stuff.removeHtmlTags(who_asks, rmHtmlTagsRegExpStr, re.IGNORECASE)
 		who_asks				= who_asks.strip()
-
 		regExpStr				= r":$"
 		who_asks				= re.sub(regExpStr, "", who_asks)
-
 		who_asks				= who_asks.strip()
-		
+
+
 		parsedChunk["who_asks"]	= who_asks
 	else:
 		parsedChunk["raw_text_rest"] = chunk
@@ -212,19 +211,23 @@ def parseChunk(chunk):
 
 	# Get [who_answers]
 	fullResultWhoAnswers	= ""
-	regExpStr				= r"((\n|\\n) *(<center>)?(<p><b>|<b><p>|<p>|<b>|<p><br>|<p><b><a.*>|<a.*><p><b>|<p><a.*><b>|<p><a.*<b>|<br>|<br><\/b>|<br><b>|<<br>b>|<br><b\.|<br><br>БиЮ|<br><br><b>) ?(Отвечает |Отаечает |Ответ |Ответ:|Пишет |Отвеачет |твечает |Отвечаете |Отвечает |Отвеачает |Отвевает |Отвечает<a.*><b> |Отвечают )(.*?)( :<\/b>|: <\/b>|:<\/b>| <\/b>|<\/b>|<\/b><\/a>| :|:)(<\/center>)? *(\(ответ изменен\))?(\n|\\n|<br>))"
+	regExpStr				= r"((\n|\\n)? *(<center>)?(<p><b>|<b><p>|<p>|<b>|<p><br>|<p><b><a.*>|<a.*><p><b>|<p><a.*><b>|<p><a.*<b>|<br>|<br><\/b>|<br><b>|<<br>b>|<br><b\.|<br><br>БиЮ|(<br>)*<b>) ?(Отвечает |Отаечает |Ответ |Ответ:|Пишет |Отвеачет |твечает |Отвечаете |Отвечает |Отвеачает |Отвевает |Отвечает<a.*><b> |Отвечают )(<a.*?><b>)?(.*?)(<\/b><\/a>\:?(<\/b>)?| :<\/b>|: <\/b>|:<\/b>| <\/b>|<\/b>| :|:|<a.*?><b>.*?<\/b><\/a>.*?)?(<\/center>)? *(\(ответ изменен\))?(: *<\/b>)((\n|\\n)?<br>)?)"
 	result					= re.findall(regExpStr, chunk, flags=re.IGNORECASE)
 
 	if result and len(result) > 0 and ( len(result[0][5]) > 0 or result[0][5] == '' ):
 		fullResultWhoAnswers	= result[0][0]
-		result					= result[0][5]
+		who_answers				= result[0][6] + result[0][7] + result[0][8] + result[0][9] + result[0][10] + result[0][11]
 		
-		# remove last semicolon if exists
-		regExpStr	= r":$"
-		result		= re.sub(regExpStr, "", result)
 
-		result						= result.strip()
-		parsedChunk["who_answers"]	= result
+		# Remove some html tags, strip, remove last semicolon if exists and after strip again
+		who_answers		= general_stuff.removeHtmlTags(who_answers, rmHtmlTagsRegExpStr, re.IGNORECASE)
+		who_answers		= who_answers.strip()
+		regExpStr		= r":$"
+		who_answers		= re.sub(regExpStr, "", who_answers)
+		who_answers		= who_answers.strip()
+
+
+		parsedChunk["who_answers"]	= who_answers
 	else:
 		parsedChunk["raw_text_rest"] = chunk
 		parsedChunk["problem_place"] = "3. who_answers"

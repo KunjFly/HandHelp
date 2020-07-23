@@ -128,11 +128,11 @@ def main():
 	for chunk in parsedChunksLst:
 		
 		
-		if not chunk["raw_text_rest"]:
-			"""
-			# There is no need to save Success parsed chunks
-			"""
-			continue
+		# if not chunk["raw_text_rest"]:
+		# 	"""
+		# 	# There is no need to save Success parsed chunks
+		# 	"""
+		# 	continue
 		
 		
 		# [raw_consultations], [consultations]
@@ -242,7 +242,7 @@ def main():
 				params		= [
 					id_consultation
 					,id_tag
-				]
+				] 
 				query       = f"""
 					Insert into consultation_tags (id_consultation, id_tag)
 					values (%s, %s)

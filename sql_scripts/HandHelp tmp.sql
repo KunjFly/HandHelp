@@ -76,7 +76,7 @@ from (
 	order by c_number::int
 )	cc
 where 1=1
-	and cc.cnt = 2
+	and cc.cnt = 3
 ;
 
 
@@ -114,9 +114,11 @@ select
 	,consults.id
 	,to_char(consults.c_date, 'DD.MM.YYYY')	c_date
 	,ask_persons.name						who_asks
-	,questions.txt							question
+--	,questions.txt							question
+	,questions.txt_edited					question_e
 	,consultants.name						consultant
-	,answers.txt							answer
+--	,answers.txt							answer
+	,answers.txt_edited						answer_e
 	,con_tags_l.tags_concat					tags
 	,consults.c_note						note
 	,consults.c_previous					prev
@@ -146,12 +148,12 @@ where	1 = 1
 	and consults.id			= questions.id_consultation
 	and consults.id			= ask_persons.id_consultation
 	and raw_cons.is_done 	= 0
---	and problem_place not in (
+--	and problem_place in (
 --		'3. who_answers'
 --	)
 order by
 	problem_place
-	,c_num
+	,c_number::int
 ;
 
 
@@ -175,7 +177,7 @@ select
 	,raw_cons.is_done						raw_con_is_done
 	,raw_cons.problem_place					problem_place
 	,raw_cons.txt							raw_con_txt
-	,raw_cons.processed_date				raw_con_proc_date
+--	,raw_cons.processed_date				raw_con_proc_date
 from
 	consultations		consults
 	,raw_consultations	raw_cons
@@ -201,7 +203,7 @@ where	1 = 1
 	and consults.id			= cons_answers.id_consultation
 	and consults.id			= questions.id_consultation
 	and consults.id			= ask_persons.id_consultation
---	and consults.id			= 460
+	and consultants."name"	like '%href%'
 order by
 	NULLIF(regexp_replace(c_number, '\D', '', 'g'), '')::int	-- order varchars as int w/ avoiding of errors
 ;
