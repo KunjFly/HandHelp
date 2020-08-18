@@ -207,51 +207,6 @@ def parseChunk(chunk):
 			result	= result.split(',')
 			result	= [x.strip() for x in result]	# trim all vals in list
 			parsedChunk["tags"] = result
-  
-
-	# Get [who_answers]
-	fullResultWhoAnswers	= ""
-	regExpStr				= r"((\n|\\n)? *(<center>)?(<p><b>|<b><p>|<p>|<b>|<p><br>|<p><b><a.*>|<a.*><p><b>|<p><a.*><b>|<p><a.*<b>|<br>|<br><\/b>|<br><b>|<<br>b>|<br><b\.|<br><br>БиЮ|(<br>)*<b>) ?(Отвечает |Отаечает |Ответ |Ответ:|Пишет |Отвеачет |твечает |Отвечаете |Отвечает |Отвеачает |Отвевает |Отвечает<a.*><b> |Отвечают )(<a.*?><b>)?(.*?)(<\/b><\/a>\:?(<\/b>)?| :<\/b>|: <\/b>|:<\/b>| <\/b>|<\/b>| :|:|<a.*?><b>.*?<\/b><\/a>.*?)?(<\/center>)? *(\(ответ изменен\))?(: *<\/b>)((\n|\\n)?<br>)?)"
-	result					= re.findall(regExpStr, chunk, flags=re.IGNORECASE)
-
-	if result and len(result) > 0 and ( len(result[0][5]) > 0 or result[0][5] == '' ):
-		fullResultWhoAnswers	= result[0][0]
-		who_answers				= result[0][6] + result[0][7] + result[0][8] + result[0][9] + result[0][10] + result[0][11]
-		
-
-		# Remove some html tags, strip, remove last semicolon if exists and after strip again
-		who_answers		= general_stuff.removeHtmlTags(who_answers, rmHtmlTagsRegExpStr, re.IGNORECASE)
-		who_answers		= who_answers.strip()
-		regExpStr		= r":$"
-		who_answers		= re.sub(regExpStr, "", who_answers)
-		who_answers		= who_answers.strip()
-
-
-		parsedChunk["who_answers"]	= who_answers
-	else:
-		parsedChunk["raw_text_rest"] = chunk
-		parsedChunk["problem_place"] = "3. who_answers"
-		return parsedChunk
-
-	
-	# Get [question]
-	result	= chunk.split(fullResultWhoAnswers)
-
-	if result and len(result) > 0:
-		fullResultQuestion	= result[0]
-		chunk	= chunk.replace(fullResultQuestion, "") # remove part [question] from chunk
-		chunk	= chunk.replace(fullResultWhoAnswers, "") # remove part [who_answers] from chunk
-
-		fullResultQuestion		= fullResultQuestion.strip()
-		parsedChunk["question"] = fullResultQuestion
-
-		fullResultQuestionFixed			= general_stuff.removeHtmlTags(fullResultQuestion, rmHtmlTagsRegExpStr, re.IGNORECASE)
-		fullResultQuestionFixed			= fullResultQuestionFixed.strip()
-		parsedChunk["question_edited"]	= fullResultQuestionFixed
-	else:
-		parsedChunk["raw_text_rest"] = chunk
-		parsedChunk["problem_place"] = "4. question"
-		return parsedChunk
 
 
 	# Get [answer_date]
@@ -266,21 +221,85 @@ def parseChunk(chunk):
 		chunk						= chunk.replace(fullResultAnswerDate, "") # remove part [answer_date] from chunk
 	else:
 		parsedChunk["raw_text_rest"] = chunk
-		parsedChunk["problem_place"] = "5. answer_date"
+		parsedChunk["problem_place"] = "3. answer_date"
 		return parsedChunk
 
 
-	# Get [answer]
-	fullResultAnswer		= chunk
-	fullResultAnswer		= fullResultAnswer.strip()
-	parsedChunk["answer"]	= fullResultAnswer
-
-	regExpStr						= r"(^<\/div>(<\/font>)* ?(<p>)*(\n|\\n)*(<p>)*-?((\n|\\n)*-?<br>)*|^<br>|^<\/br>|^<font.*?><br>|^<font.*?>(\n|\\n)<br>|<br>$|<\/br>$|<font.*?>|<\/font><\/h2>|<\/font>|<b>|<\/b>)"
-	fullResultAnswerFixed			= general_stuff.removeHtmlTags(fullResultAnswer, rmHtmlTagsRegExpStr, re.IGNORECASE)
-	fullResultAnswerFixed			= fullResultAnswerFixed.strip()
-	parsedChunk["answer_edited"]	= fullResultAnswerFixed
+	# Get [who_answers] - can be more than one answer
+	fullResultWhoAnswersLst	= []
+	who_answersLst			= []
+	regExpStr				= r"((\n|\\n)? *(<center>)?(<p><b>|<b><p>|<p>|<b>|<p><br>|<p><b><a.*>|<a.*><p><b>|<p><a.*><b>|<p><a.*<b>|<br>|<br><\/b>|<br><b>|<<br>b>|<br><b\.|<br><br>БиЮ|(<br>)*<b>) ?(Отвечает |Отаечает |Ответ |Ответ:|Пишет |Отвеачет |твечает |Отвечаете |Отвечает |Отвеачает |Отвевает |Отвечает<a.*><b> |Отвечают )(<a.*?><b>)?(.*?)(<\/b><\/a>\:?(<\/b>)?| :<\/b>|: <\/b>|:<\/b>| <\/b>|<\/b>| :|:|<a.*?><b>.*?<\/b><\/a>.*?)?(<\/center>)? *(\(ответ изменен\))?(: *<\/b>)((\n|\\n)?<br>)?)"
+	result					= re.findall(regExpStr, chunk, flags=re.IGNORECASE)
 	
+	if result and len(result) > 0:
 
+		for item in result:
+			fullResultWhoAnswers	= item[0]
+			# who_answers				= item[6] + item[7] + item[8] + item[9] + item[10] + item[11]
+			who_answers				= "".join(item[6:11])
+
+			# Remove some html tags, strip, remove last semicolon if exists and after strip again
+			who_answers		= general_stuff.removeHtmlTags(who_answers, rmHtmlTagsRegExpStr, re.IGNORECASE)
+			who_answers		= who_answers.strip()
+			regExpStr		= r":$"
+			who_answers		= re.sub(regExpStr, "", who_answers)
+			who_answers		= who_answers.strip()
+
+			fullResultWhoAnswersLst.append(fullResultWhoAnswers)
+			who_answersLst.append(who_answers)
+
+		parsedChunk["who_answers"]	= who_answersLst
+	else:
+		parsedChunk["raw_text_rest"] = chunk
+		parsedChunk["problem_place"] = "4. who_answers"
+		return parsedChunk
+
+	
+	# Get [question]
+	firstWhoAnswers	= fullResultWhoAnswersLst[0]
+	result			= chunk.split(firstWhoAnswers)
+
+	if result and len(result) > 0:
+		fullResultQuestion	= result[0]
+		chunk	= chunk.replace(fullResultQuestion, "") # remove part [question] from chunk
+		# chunk	= chunk.replace(firstWhoAnswers, "") # remove part [who_answers] from chunk
+
+		fullResultQuestion				= fullResultQuestion.strip()
+		parsedChunk["question"] 		= fullResultQuestion
+
+		fullResultQuestionFixed			= general_stuff.removeHtmlTags(fullResultQuestion, rmHtmlTagsRegExpStr, re.IGNORECASE)
+		fullResultQuestionFixed			= fullResultQuestionFixed.strip()
+		parsedChunk["question_edited"]	= fullResultQuestionFixed
+	else:
+		parsedChunk["raw_text_rest"] = chunk
+		parsedChunk["problem_place"] = "5. question"
+		return parsedChunk
+
+
+	# Get [answer] - can be more than one answer
+	fullResultAnswersLst		= []
+	fullResultAnswerFixedLst	= []
+	for whoAnswers in reversed(fullResultWhoAnswersLst):
+		result	= chunk.split(whoAnswers)
+
+		if result and len(result) > 0:
+			fullResultAnswer		= result[-1]
+			chunk	= chunk.replace(whoAnswers, "")			# remove part [whoAnswers] from chunk
+			chunk	= chunk.replace(fullResultAnswer, "")	# remove part [fullResultAnswer] from chunk
+
+			fullResultAnswer		= fullResultAnswer.strip()
+			fullResultAnswersLst.insert(0, fullResultAnswer)
+
+			regExpStr						= r"(^<\/div>(<\/font>)* ?(<p>)*(\n|\\n)*(<p>)*-?((\n|\\n)*-?<br>)*|^<br>|^<\/br>|^<font.*?><br>|^<font.*?>(\n|\\n)<br>|<br>$|<\/br>$|(<\/p>)*(<\/div>)*(<\/h2>)*$|<font.*?>|<\/font><\/h2>|<\/font>|<b>|<\/b>)"
+			fullResultAnswerFixed			= general_stuff.removeHtmlTags(fullResultAnswer, rmHtmlTagsRegExpStr, re.IGNORECASE)
+			fullResultAnswerFixed			= fullResultAnswerFixed.strip()
+			fullResultAnswerFixedLst.insert(0, fullResultAnswerFixed)
+		else:
+			break
+		pass
+
+	parsedChunk["answer"]			= fullResultAnswersLst
+	parsedChunk["answer_edited"]	= fullResultAnswerFixedLst
 	parsedChunk["is_done"] = True    
 	return parsedChunk
 #endregion Functions

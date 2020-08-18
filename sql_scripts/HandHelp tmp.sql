@@ -29,9 +29,9 @@ select * from consultations;
 select * from tags order by txt;
 select * from consultation_tags;
 
---select * from answers;
---select * from consultants;
---select * from consultant_answers;
+select * from answers;
+select * from consultants;
+select * from consultant_answers;
 
 --select * from questions;
 --select * from asking_persons;
@@ -203,7 +203,7 @@ where	1 = 1
 	and consults.id			= cons_answers.id_consultation
 	and consults.id			= questions.id_consultation
 	and consults.id			= ask_persons.id_consultation
-	and consultants."name"	like '%href%'
+--	and consultants."name"	like '%href%'
 order by
 	NULLIF(regexp_replace(c_number, '\D', '', 'g'), '')::int	-- order varchars as int w/ avoiding of errors
 ;

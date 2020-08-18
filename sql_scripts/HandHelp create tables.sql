@@ -38,7 +38,8 @@ BEGIN
 		c_date				timestamptz		null,
 		is_outdated			smallint		null,
 		c_note				text			null,
-		c_previous			text			null
+		c_previous			text			null,
+		answers_count		integer			not null default 1
 	);
 	/*
 		/Consultations main tables
