@@ -76,10 +76,11 @@ def parseChunk(chunk):
 		,"problem_place"	: None
 		,"note"				: None
 		,"previous"			: None
+		,"answers_count"	: 0
 	}
 
 
-	rmHtmlTagsRegExpStr				= r"(^<\/div>(<\/font>)* *\t*(<p>)*(\n|\\n|\r\n|\\r\\n|\n\r|\\n\\r)*(\t|\\t)*(<p>)*-?((\n|\\n|\r\n|\\r\\n|\n\r|\\n\\r)*(\t|\\t)*-?<br>)*|^<br>|^<\/br>|^<font.*?><br>|^<font.*?>(\n|\\n|\r\n|\\r\\n|\n\r|\\n\\r)*(\t|\\t)*<br>|<br>$|<\/br>$|<font.*?>|<\/font><\/h2>|<\/font>|<b>|<\/b>)"
+	rmHtmlTagsRegExpStr				= r"(^<\/div>(<\/font>)* *\t*(<p>)*(\n|\\n|\r\n|\\r\\n|\n\r|\\n\\r)*(\t|\\t)*(<p>)*-?((\n|\\n|\r\n|\\r\\n|\n\r|\\n\\r)*(\t|\\t)*-?<br>)*|^<br>|^<\/br>|^<font.*?><br>|^<font.*?>(\n|\\n|\r\n|\\r\\n|\n\r|\\n\\r)*(\t|\\t)*<br>|<br>$|<\/br>$|<font.*?>|(<\/p>)*(<\/div>)*(<\/h2>)*$|<\/font>(<\/h2>)*(<p>)*|<\/font>|<b>|<\/b>)"
 
 	# Replace HTML entities
 	chunk		= chunk.replace("&nbsp;", " ")
@@ -228,7 +229,7 @@ def parseChunk(chunk):
 	# Get [who_answers] - can be more than one answer
 	fullResultWhoAnswersLst	= []
 	who_answersLst			= []
-	regExpStr				= r"((\n|\\n)? *(<center>)?(<p><b>|<b><p>|<p>|<b>|<p><br>|<p><b><a.*>|<a.*><p><b>|<p><a.*><b>|<p><a.*<b>|<br>|<br><\/b>|<br><b>|<<br>b>|<br><b\.|<br><br>БиЮ|(<br>)*<b>) ?(Отвечает |Отаечает |Ответ |Ответ:|Пишет |Отвеачет |твечает |Отвечаете |Отвечает |Отвеачает |Отвевает |Отвечает<a.*><b> |Отвечают )(<a.*?><b>)?(.*?)(<\/b><\/a>\:?(<\/b>)?| :<\/b>|: <\/b>|:<\/b>| <\/b>|<\/b>| :|:|<a.*?><b>.*?<\/b><\/a>.*?)?(<\/center>)? *(\(ответ изменен\))?(: *<\/b>)((\n|\\n)?<br>)?)"
+	regExpStr				= r"((\n|\\n)? *(<center>)?(<p><b>|<b><p>|<p>|<b>|<p><br>|<p><b><a.*>|<a.*><p><b>|<p><a.*><b>|<p><a.*<b>|<br>|<br><\/b>|<br><b>|<<br>b>|<br><b\.|<br><br>БиЮ|(<br>)*<b>) ?(Отвечает |Отаечает |Ответ |Ответ:|Пишет |Отвеачет |твечает |Отвечаете |Отвечает |Отвеачает |Отвевает |Отвечает<a.*><b> |Отвечают )(<a.*?><b>)?(.*?)(<\/b><\/a>\:?(<\/b>)?| :<\/b>|: <\/b>|:<\/b>| <\/b>|<\/b>| :|:|<a.*?><b>.*?<\/b><\/a>.*?)?(<\/center>)? *(\(ответ изменен\))?((\:|\.) *(<br>)*<\/b>)((\n|\\n)?<br>)?)"
 	result					= re.findall(regExpStr, chunk, flags=re.IGNORECASE)
 	
 	if result and len(result) > 0:
@@ -298,9 +299,11 @@ def parseChunk(chunk):
 			break
 		pass
 
+	
 	parsedChunk["answer"]			= fullResultAnswersLst
 	parsedChunk["answer_edited"]	= fullResultAnswerFixedLst
-	parsedChunk["is_done"] = True    
+	parsedChunk["answers_count"]	= len(fullResultWhoAnswersLst)
+	parsedChunk["is_done"]			= True    
 	return parsedChunk
 #endregion Functions
 

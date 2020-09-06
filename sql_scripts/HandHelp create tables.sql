@@ -39,7 +39,7 @@ BEGIN
 		is_outdated			smallint		null,
 		c_note				text			null,
 		c_previous			text			null,
-		answers_count		integer			not null default 1
+		answers_count		integer
 	);
 	/*
 		/Consultations main tables

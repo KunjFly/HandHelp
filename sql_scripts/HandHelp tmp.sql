@@ -76,7 +76,7 @@ from (
 	order by c_number::int
 )	cc
 where 1=1
-	and cc.cnt = 3
+	and cc.cnt = 2
 ;
 
 
@@ -177,6 +177,7 @@ select
 	,raw_cons.is_done						raw_con_is_done
 	,raw_cons.problem_place					problem_place
 	,raw_cons.txt							raw_con_txt
+	,consults.answers_count					ans_cnt
 --	,raw_cons.processed_date				raw_con_proc_date
 from
 	consultations		consults
@@ -204,6 +205,7 @@ where	1 = 1
 	and consults.id			= questions.id_consultation
 	and consults.id			= ask_persons.id_consultation
 --	and consultants."name"	like '%href%'
+--	and consults.answers_count > 1 
 order by
 	NULLIF(regexp_replace(c_number, '\D', '', 'g'), '')::int	-- order varchars as int w/ avoiding of errors
 ;
